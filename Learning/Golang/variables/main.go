@@ -3,6 +3,12 @@ package main
 import "fmt"
 
 func main() {
+	/*
+		Golang reference docs:
+		https://go.dev/ref/spec#Types
+		https://go.dev/ref/spec#Variables
+	*/
+
 	fmt.Println("Variables in Golang")
 
 	/*
@@ -89,4 +95,13 @@ func main() {
 	fmt.Println("my_rune is of type: ", fmt.Sprintf("%T", my_rune))
 	fmt.Println("my_rune is of value: ", my_rune)
 	fmt.Println()
+
+	var my_name string = "Sami M"
+	fmt.Println("my_name is of type: ", fmt.Sprintf("%T", my_name))
+	fmt.Println("my_name is of value: ", my_name)
+	fmt.Println()
+
+	const tax_rate float64 = 0.18
+	fmt.Println("tax_rate is of type: ", fmt.Sprintf("%T", tax_rate))
+	fmt.Println("tax_rate is of value: ", tax_rate)
 }
