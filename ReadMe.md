@@ -13,6 +13,8 @@ Sami Munir | samidmunir@outlook.com | Rutgers University
 
 ## Projects
 
+### Air Traffic Control Sim
+
 ## LeetCode Mastery
 
 ## Data Structures & Algorithms
