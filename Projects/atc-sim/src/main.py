@@ -54,7 +54,7 @@ class SimScene(Scene):
     def on_enter(self):
         log.info("Simulation started (Multi-Runway Prep).")
 
-    # ---------- Command helpers ----------
+    # ---------- Helpers ----------
     def _selected(self):
         return self.world.selected
 
@@ -81,44 +81,78 @@ class SimScene(Scene):
         self.prompt.start("DCT", "Type FIX name (e.g., KILO) and Enter", _submit)
 
     def _intercept_localizer(self):
-        """Aim to intercept the active arrival localizer at a sane point AHEAD on the beam."""
+        """
+        Robust localizer intercept:
+        - If aircraft is already within 30° of the active localizer course, issue a
+          shallow correction toward centerline without reversing direction.
+        - Otherwise, aim at an intercept point AHEAD on the beam and guarantee that
+          the target lies forward of the aircraft (prevents U-turn commands).
+        """
         ac = self._selected()
         if not ac:
             return
 
         end = self.world.get_active_arrival_end()
 
-        # Intercept angle clamp for stability
-        phi_deg = max(5.0, min(45.0, float(INTERCEPT_ANGLE_DEG)))
-        phi = math.radians(phi_deg)
-
-        # Heuristics to avoid aiming too far/near
-        MIN_AHEAD_NM = 2.0
-        MAX_AHEAD_NM = 20.0
-
-        # Localizer axis unit vectors (0°=north, 90°=east)
+        # Localizer axis (0°=north, 90°=east); along-track u, right-hand normal n
         cr = math.radians(end.course_deg)
-        ux, uy = math.sin(cr), math.cos(cr)      # along-track
-        nx, ny = uy, -ux                         # right-hand normal
+        ux, uy = math.sin(cr), math.cos(cr)
+        nx, ny = uy, -ux
 
-        # Vector from threshold to aircraft
+        # Aircraft relative to threshold
         rx = ac.wx - end.threshold_wx
         ry = ac.wy - end.threshold_wy
 
-        # Signed cross-track (positive to right of course), along-track s
-        xtrack = rx * nx + ry * ny
+        # Cross-track (signed, +right of course) and along-track distances (NM)
+        x = rx * nx + ry * ny
         s = rx * ux + ry * uy
 
-        # Distance ahead to aim so we cross at ~phi
-        d_ahead = MIN_AHEAD_NM if math.tan(phi) == 0 else abs(xtrack) / math.tan(phi)
-        d_ahead = max(MIN_AHEAD_NM, min(MAX_AHEAD_NM, d_ahead))
+        # Heading error w.r.t. localizer course (−180..+180)
+        def angdiff(a, b):
+            d = (a - b) % 360.0
+            if d > 180.0:
+                d -= 360.0
+            return d
+        hdg_err = abs(angdiff(ac.hdg_deg, end.course_deg))
+
+        # Tunables
+        PHI_MAX = max(5.0, min(45.0, float(INTERCEPT_ANGLE_DEG)))  # intercept angle clamp
+        SHALLOW_MAX = min(20.0, PHI_MAX)                            # shallow correction cap if near-final
+        MIN_AHEAD = 2.0
+        MAX_AHEAD = 20.0
+
+        # Case 1: already pointed roughly down the localizer (<= 30°)
+        if hdg_err <= 30.0:
+            # Small correction: steer slightly to the side that reduces cross-track.
+            # If x > 0 (right of course) => steer left of course (course - phi).
+            # If x < 0 (left of course)  => steer right of course (course + phi).
+            phi = min(SHALLOW_MAX, max(5.0, min(15.0, abs(x))))  # scale 5..15° with |x|
+            desired = (end.course_deg - math.copysign(phi, x)) % 360.0
+            apply_command(ac, HdgCmd(desired))
+            ac.phase = "VEC"
+            return
+
+        # Case 2: standard intercept aim point ahead on the beam at ~PHI_MAX
+        phi_rad = math.radians(PHI_MAX)
+        d_ahead = MIN_AHEAD if math.tan(phi_rad) == 0 else abs(x) / math.tan(phi_rad)
+        d_ahead = max(MIN_AHEAD, min(MAX_AHEAD, d_ahead))
 
         s_target = s + d_ahead
-        wx_target = end.threshold_wx + ux * s_target
-        wy_target = end.threshold_wy + uy * s_target
 
-        # Command heading to that intercept point
-        brg = (math.degrees(math.atan2(wx_target - ac.wx, wy_target - ac.wy)) % 360.0)
+        # Ensure target is forward of the aircraft along-track; nudge if needed
+        for _ in range(3):
+            wx_t = end.threshold_wx + ux * s_target
+            wy_t = end.threshold_wy + uy * s_target
+            vx = wx_t - ac.wx
+            vy = wy_t - ac.wy
+            if vx * ux + vy * uy > 0:  # forward along the beam
+                break
+            s_target += 2.0  # push farther ahead
+
+        wx_t = end.threshold_wx + ux * s_target
+        wy_t = end.threshold_wy + uy * s_target
+        brg = (math.degrees(math.atan2(wx_t - ac.wx, wy_t - ac.wy)) % 360.0)
+
         apply_command(ac, HdgCmd(brg))
         ac.phase = "VEC"
 
@@ -136,7 +170,7 @@ class SimScene(Scene):
 
     # ---------- Events ----------
     def handle_event(self, e: pg.event.Event):
-        # Let prompt capture typing
+        # Let prompt consume typing first
         self.prompt.handle_event(e)
         if self.prompt.active:
             if e.type != pg.KEYDOWN:
@@ -182,6 +216,7 @@ class SimScene(Scene):
                 self._prompt_number("SPD", "Enter speed (kts)",
                                     lambda v: apply_command(self._selected(), SpdCmd(v)))
 
+            # Altitude: Shift+A or Ctrl+A
             elif e.key == pg.K_a and self._selected() and (mods & (pg.KMOD_SHIFT | pg.KMOD_CTRL)):
                 self._prompt_number("ALT", "Enter altitude (ft)",
                                     lambda v: apply_command(self._selected(), AltCmd(v)))
@@ -202,7 +237,7 @@ class SimScene(Scene):
             elif e.key == pg.K_d and not (mods & (pg.KMOD_SHIFT | pg.KMOD_CTRL | pg.KMOD_ALT | pg.KMOD_META)):
                 self.world.spawn_departure()
 
-        # Mouse
+        # Mouse: selection / pan / zoom
         self.radar.handle_event(e, zoom_step=ZOOM_STEP, zoom_min=ZOOM_MIN, zoom_max=ZOOM_MAX)
 
     # ---------- Update/Draw ----------
