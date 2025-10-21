@@ -55,6 +55,31 @@ DEPARTURE_INIT_ALT_FT = 0
 DEPARTURE_INIT_SPD_KTS = 180
 DEPARTURE_CLIMB_FPM = 2000
 
-# ====== Separation (for future; used to tint if too close later) ======
+# ====== UI Colors ======
+SELECT_COLOR = (255, 255, 0)        # yellow ring around selected
+ALERT_COLOR = (255, 170, 60)        # amber for alerts
+CONFLICT_COLOR = (255, 80, 80)      # red for conflicts
+BANNER_BG = (32, 32, 40)
+BANNER_TEXT = (240, 240, 245)
+
+# ====== Command Palette UI ======
+PROMPT_BG = (18, 18, 22)
+PROMPT_BORDER = (60, 60, 70)
+PROMPT_TEXT = (235, 235, 240)
+PROMPT_HINT = (150, 150, 160)
+
+# ====== Motion Trails ======
+TRAILS_ENABLED = True
+TRAIL_MAX_POINTS = 18               # ~ last N samples
+TRAIL_SAMPLE_SEC = 0.33             # record position every X sec
+
+# ====== Separation thresholds ======
 LATERAL_SEP_NM = 3.0
 VERTICAL_SEP_FT = 1000
+ALERT_LATERAL_NM = 2.0
+ALERT_VERTICAL_FT = 600
+
+# ====== Vector-to-final helper ======
+INTERCEPT_ANGLE_DEG = 30.0
+PLATFORM_ALT_FT = 3000.0
+PLATFORM_RADIUS_NM = 15.0

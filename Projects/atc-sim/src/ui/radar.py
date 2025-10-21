@@ -1,9 +1,11 @@
 import pygame as pg
-from typing import Tuple
+from typing import Tuple, Optional
 from config import (
     GRID_COLOR, RUNWAY_COLOR, FIX_COLOR, AIRCRAFT_COLOR, LEADER_COLOR,
-    UI_TEXT, FONT_NAME, FONT_SIZE
+    UI_TEXT, FONT_NAME, FONT_SIZE, SELECT_COLOR, ALERT_COLOR, CONFLICT_COLOR, TRAILS_ENABLED
 )
+
+HIT_RADIUS_PX = 8
 
 class RadarView:
     def __init__(self, camera, world):
@@ -12,12 +14,14 @@ class RadarView:
         self.font = pg.font.Font(FONT_NAME, FONT_SIZE)
 
         self._panning = False
-        self._last_mouse: Tuple[int, int] | None = None
+        self._last_mouse: Optional[Tuple[int, int]] = None
 
     # ---------- Input ----------
     def handle_event(self, e: pg.event.Event, zoom_step: float, zoom_min: float, zoom_max: float):
         if e.type == pg.MOUSEBUTTONDOWN:
-            if e.button == 3:  # right mouse
+            if e.button == 1:  # left: select
+                self._select_at(e.pos)
+            elif e.button == 3:  # right: pan
                 self._panning = True
                 self._last_mouse = e.pos
             elif e.button == 4:  # wheel up
@@ -37,25 +41,33 @@ class RadarView:
                 self.cam.pan_pixels(dx, dy)
                 self._last_mouse = e.pos
 
+    def _select_at(self, pos):
+        sx, sy = pos
+        best = None; best_d2 = (HIT_RADIUS_PX+1) ** 2
+        for ac in self.world.aircraft:
+            ax, ay = self.cam.world_to_screen(ac.wx, ac.wy)
+            dx = ax - sx; dy = ay - sy
+            d2 = dx*dx + dy*dy
+            if d2 <= best_d2:
+                best = ac; best_d2 = d2
+        self.world.selected = best
+
     # ---------- Draw ----------
     def draw(self, surf: pg.Surface):
         self._draw_grid(surf)
         self._draw_runway(surf)
         self._draw_fixes(surf)
         self._draw_aircraft(surf)
+        self._draw_conflicts(surf)
 
     def _draw_grid(self, surf: pg.Surface):
         w, h = surf.get_size()
-        # Choose a grid pitch in NM that maps to ~50-100 px per line
         target_px = 70
         pitch_nm = max(0.5, round(target_px / self.cam.px_per_nm, 1))
-        # Draw vertical lines
         left_wx, top_wy = self.cam.screen_to_world(0, 0)
         right_wx, bot_wy = self.cam.screen_to_world(w, h)
-        min_x = min(left_wx, right_wx)
-        max_x = max(left_wx, right_wx)
-        min_y = min(bot_wy, top_wy)
-        max_y = max(bot_wy, top_wy)
+        min_x = min(left_wx, right_wx); max_x = max(left_wx, right_wx)
+        min_y = min(bot_wy, top_wy); max_y = max(bot_wy, top_wy)
 
         start_x = (int(min_x / pitch_nm) - 1) * pitch_nm
         x = start_x
@@ -71,7 +83,6 @@ class RadarView:
             pg.draw.line(surf, GRID_COLOR, (0, sy), (w, sy), 1)
             y += pitch_nm
 
-        # Center crosshair
         cx, cy = self.cam.world_to_screen(self.cam.center_wx, self.cam.center_wy)
         pg.draw.line(surf, GRID_COLOR, (cx-8, cy), (cx+8, cy), 2)
         pg.draw.line(surf, GRID_COLOR, (cx, cy-8), (cx, cy+8), 2)
@@ -90,10 +101,24 @@ class RadarView:
             surf.blit(label, (sx + 6, sy - 10))
 
     def _draw_aircraft(self, surf: pg.Surface):
+        sel = self.world.selected
         for ac in self.world.aircraft:
             sx, sy = self.cam.world_to_screen(ac.wx, ac.wy)
-            # target symbol
+
+            # trails
+            if TRAILS_ENABLED and ac._trail:
+                last = (sx, sy)
+                for wx, wy in ac._trail[::-1]:
+                    tx, ty = self.cam.world_to_screen(wx, wy)
+                    pg.draw.line(surf, (70, 90, 90), (tx, ty), last, 1)
+                    last = (tx, ty)
+
+            # symbol
             pg.draw.circle(surf, AIRCRAFT_COLOR, (sx, sy), 3)
+
+            # selection ring
+            if ac is sel:
+                pg.draw.circle(surf, SELECT_COLOR, (sx, sy), 7, 1)
 
             # leader line
             lwx, lwy = ac.leader_endpoint(ac.leader_secs)
@@ -101,7 +126,17 @@ class RadarView:
             pg.draw.line(surf, LEADER_COLOR, (sx, sy), (lsx, lsy), 1)
 
             # data block
-            text = f"{ac.callsign}  {int(ac.alt_ft/100):02d} {int(ac.spd_kts)}"
-            img = self.font.render(text, True, UI_TEXT)
+            vs_arrow = "↑" if ac.vs_fpm > 200 else ("↓" if ac.vs_fpm < -200 else " ")
+            txt = f"{ac.callsign} {ac.phase}  {int(ac.alt_ft/100):02d}{vs_arrow}  {int(ac.spd_kts)}"
+            img = self.font.render(txt, True, UI_TEXT)
             offx, offy = ac.label_offset_px
             surf.blit(img, (sx + offx, sy + offy))
+
+    def _draw_conflicts(self, surf: pg.Surface):
+        for item in self.world.conflicts:
+            a = self.world.aircraft[item.pair.a_idx]
+            b = self.world.aircraft[item.pair.b_idx]
+            ax, ay = self.cam.world_to_screen(a.wx, a.wy)
+            bx, by = self.cam.world_to_screen(b.wx, b.wy)
+            color = CONFLICT_COLOR if item.level == "CONFLICT" else ALERT_COLOR
+            pg.draw.line(surf, color, (ax, ay), (bx, by), 1)
