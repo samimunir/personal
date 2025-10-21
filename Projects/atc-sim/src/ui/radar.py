@@ -1,8 +1,10 @@
+import math
 import pygame as pg
 from typing import Tuple, Optional
 from config import (
     GRID_COLOR, RUNWAY_COLOR, FIX_COLOR, AIRCRAFT_COLOR, LEADER_COLOR,
-    UI_TEXT, FONT_NAME, FONT_SIZE, SELECT_COLOR, ALERT_COLOR, CONFLICT_COLOR, TRAILS_ENABLED
+    UI_TEXT, FONT_NAME, FONT_SIZE, SELECT_COLOR, ALERT_COLOR, CONFLICT_COLOR,
+    TRAILS_ENABLED, CENTERLINE_LENGTH_NM, CENTERLINE_DASH_NM
 )
 
 HIT_RADIUS_PX = 8
@@ -15,6 +17,7 @@ class RadarView:
 
         self._panning = False
         self._last_mouse: Optional[Tuple[int, int]] = None
+        self.show_all_centerlines = False  # toggled by X
 
     # ---------- Input ----------
     def handle_event(self, e: pg.event.Event, zoom_step: float, zoom_min: float, zoom_max: float):
@@ -55,7 +58,8 @@ class RadarView:
     # ---------- Draw ----------
     def draw(self, surf: pg.Surface):
         self._draw_grid(surf)
-        self._draw_runway(surf)
+        self._draw_runways(surf)
+        self._draw_centerlines(surf)
         self._draw_fixes(surf)
         self._draw_aircraft(surf)
         self._draw_conflicts(surf)
@@ -87,11 +91,45 @@ class RadarView:
         pg.draw.line(surf, GRID_COLOR, (cx-8, cy), (cx+8, cy), 2)
         pg.draw.line(surf, GRID_COLOR, (cx, cy-8), (cx, cy+8), 2)
 
-    def _draw_runway(self, surf: pg.Surface):
-        a, b = self.world.runway.endpoints()
-        ax, ay = self.cam.world_to_screen(*a)
-        bx, by = self.cam.world_to_screen(*b)
-        pg.draw.line(surf, RUNWAY_COLOR, (ax, ay), (bx, by), 6)
+    def _draw_runways(self, surf: pg.Surface):
+        for rwy in self.world.airport.runways:
+            a = rwy.ends[0]; b = rwy.ends[1]
+            ax, ay = self.cam.world_to_screen(a.threshold_wx, a.threshold_wy)
+            bx, by = self.cam.world_to_screen(b.threshold_wx, b.threshold_wy)
+            pg.draw.line(surf, RUNWAY_COLOR, (ax, ay), (bx, by), 6)
+            # labels near thresholds
+            la = self.font.render(a.ident, True, UI_TEXT)
+            lb = self.font.render(b.ident, True, UI_TEXT)
+            surf.blit(la, (ax + 6, ay - 6))
+            surf.blit(lb, (bx + 6, by - 6))
+
+    def _draw_centerlines(self, surf: pg.Surface):
+        # Draw extended centerlines; active arrival end always shown.
+        ends = []
+        active_end = self.world.get_active_arrival_end()
+        if self.show_all_centerlines:
+            # all ends
+            for r in self.world.airport.runways:
+                ends.extend(list(r.ends))
+        else:
+            ends = [active_end]
+
+        for e in ends:
+            # extend OUTBOUND from threshold along final course
+            cr = math.radians(e.course_deg)
+            dx = math.sin(cr)
+            dy = math.cos(cr)
+            segs = int(CENTERLINE_LENGTH_NM / CENTERLINE_DASH_NM)
+            for i in range(segs):
+                s0 = i * CENTERLINE_DASH_NM
+                s1 = s0 + CENTERLINE_DASH_NM * 0.6  # gap after 60%
+                wx0 = e.threshold_wx + dx * s0
+                wy0 = e.threshold_wy + dy * s0
+                wx1 = e.threshold_wx + dx * s1
+                wy1 = e.threshold_wy + dy * s1
+                x0, y0 = self.cam.world_to_screen(wx0, wy0)
+                x1, y1 = self.cam.world_to_screen(wx1, wy1)
+                pg.draw.line(surf, (120, 160, 200) if e is active_end else (90, 110, 130), (x0, y0), (x1, y1), 1)
 
     def _draw_fixes(self, surf: pg.Surface):
         for name, wx, wy in self.world.fixes:

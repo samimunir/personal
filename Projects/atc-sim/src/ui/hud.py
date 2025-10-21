@@ -19,9 +19,8 @@ class DebugHUD:
             f"Sim t: {self.sim_time:7.2f}s",
             f"Scale: x{self.time_scale:.2f}",
             f"Paused: {self.paused}",
-            # updated hint to reflect fixed keybindings
-            "A: arrival  D: departure  Shift/Ctrl+A: set ALT  RMB-drag: pan  Wheel: zoom",
-            "Selected: H=HDG  S=SPD  G=DCT  L=Intercept  V=Platform"
+            "A: arrival  D: departure  Shift/Ctrl+A: ALT  RMB-drag: pan  Wheel: zoom",
+            "Selected: H=HDG  S=SPD  G=DCT  L=Intercept  V=Platform  R=Next ARR  Shift+R=Next DEP  X=centerlines"
         ]
         x, y = 10, 8
         for i, text in enumerate(lines):

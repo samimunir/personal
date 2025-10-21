@@ -7,7 +7,8 @@ from config import (
     FONT_NAME, FONT_SIZE,
     INITIAL_CENTER_WX, INITIAL_CENTER_WY, INITIAL_ZOOM_PX_PER_NM,
     ZOOM_MIN, ZOOM_MAX, ZOOM_STEP,
-    INTERCEPT_ANGLE_DEG, PLATFORM_ALT_FT, PLATFORM_RADIUS_NM
+    INTERCEPT_ANGLE_DEG, PLATFORM_ALT_FT, PLATFORM_RADIUS_NM,
+    SHOW_ALL_CENTERLINES_DEFAULT
 )
 
 from core.scene import Scene, SceneManager
@@ -41,6 +42,8 @@ class SimScene(Scene):
         )
 
         self.radar = RadarView(self.camera, self.world)
+        self.radar.show_all_centerlines = SHOW_ALL_CENTERLINES_DEFAULT
+
         self.hud = DebugHUD(font=self.font, time_scale=DEFAULT_TIME_SCALE, paused=PAUSED_AT_START)
         self.banner = Banner(self.font)
         self.prompt = CommandPrompt(self.font)
@@ -49,7 +52,7 @@ class SimScene(Scene):
         self.paused = PAUSED_AT_START
 
     def on_enter(self):
-        log.info("Simulation started (Milestone 2).")
+        log.info("Simulation started (Multi-Runway Prep).")
 
     # ---------- Command helpers ----------
     def _selected(self):
@@ -78,26 +81,54 @@ class SimScene(Scene):
         self.prompt.start("DCT", "Type FIX name (e.g., KILO) and Enter", _submit)
 
     def _intercept_localizer(self):
+        """Aim to intercept the active arrival localizer at a sane point AHEAD on the beam."""
         ac = self._selected()
         if not ac:
             return
-        rw_hdg = self.world.runway.heading_deg
-        hdg_rad = math.radians(rw_hdg)
-        nx, ny = math.sin(hdg_rad), math.cos(hdg_rad)  # course unit vector
-        cx, cy = self.world.runway.center_wx, self.world.runway.center_wy
-        vx, vy = cx - ac.wx, cy - ac.wy
-        cross = nx * vy - ny * vx  # sign tells which side of course
-        turn_sign = -1.0 if cross > 0 else 1.0
-        target = (rw_hdg + turn_sign * INTERCEPT_ANGLE_DEG) % 360.0
-        apply_command(ac, HdgCmd(target))
+
+        end = self.world.get_active_arrival_end()
+
+        # Intercept angle clamp for stability
+        phi_deg = max(5.0, min(45.0, float(INTERCEPT_ANGLE_DEG)))
+        phi = math.radians(phi_deg)
+
+        # Heuristics to avoid aiming too far/near
+        MIN_AHEAD_NM = 2.0
+        MAX_AHEAD_NM = 20.0
+
+        # Localizer axis unit vectors (0°=north, 90°=east)
+        cr = math.radians(end.course_deg)
+        ux, uy = math.sin(cr), math.cos(cr)      # along-track
+        nx, ny = uy, -ux                         # right-hand normal
+
+        # Vector from threshold to aircraft
+        rx = ac.wx - end.threshold_wx
+        ry = ac.wy - end.threshold_wy
+
+        # Signed cross-track (positive to right of course), along-track s
+        xtrack = rx * nx + ry * ny
+        s = rx * ux + ry * uy
+
+        # Distance ahead to aim so we cross at ~phi
+        d_ahead = MIN_AHEAD_NM if math.tan(phi) == 0 else abs(xtrack) / math.tan(phi)
+        d_ahead = max(MIN_AHEAD_NM, min(MAX_AHEAD_NM, d_ahead))
+
+        s_target = s + d_ahead
+        wx_target = end.threshold_wx + ux * s_target
+        wy_target = end.threshold_wy + uy * s_target
+
+        # Command heading to that intercept point
+        brg = (math.degrees(math.atan2(wx_target - ac.wx, wy_target - ac.wy)) % 360.0)
+        apply_command(ac, HdgCmd(brg))
         ac.phase = "VEC"
 
     def _descend_platform(self):
         ac = self._selected()
         if not ac:
             return
-        dx = ac.wx - self.world.runway.center_wx
-        dy = ac.wy - self.world.runway.center_wy
+        end = self.world.get_active_arrival_end()
+        dx = ac.wx - end.threshold_wx
+        dy = ac.wy - end.threshold_wy
         dist = math.hypot(dx, dy)
         if dist <= PLATFORM_RADIUS_NM:
             apply_command(ac, AltCmd(PLATFORM_ALT_FT))
@@ -105,10 +136,9 @@ class SimScene(Scene):
 
     # ---------- Events ----------
     def handle_event(self, e: pg.event.Event):
-        # Let prompt consume typing first
+        # Let prompt capture typing
         self.prompt.handle_event(e)
         if self.prompt.active:
-            # still allow pan/zoom while typing
             if e.type != pg.KEYDOWN:
                 self.radar.handle_event(e, zoom_step=ZOOM_STEP, zoom_min=ZOOM_MIN, zoom_max=ZOOM_MAX)
             return
@@ -135,6 +165,14 @@ class SimScene(Scene):
                 scale_map = {pg.K_1: 0.25, pg.K_2: 0.5, pg.K_3: 1.0, pg.K_4: 2.0, pg.K_5: 4.0}
                 self.time_scale = scale_map[e.key]
 
+            # --- Runway end cycling + centerlines ---
+            elif e.key == pg.K_r and (mods & (pg.KMOD_SHIFT)):
+                self.world.cycle_active_departure()
+            elif e.key == pg.K_r and not (mods & (pg.KMOD_SHIFT | pg.KMOD_CTRL | pg.KMOD_ALT | pg.KMOD_META)):
+                self.world.cycle_active_arrival()
+            elif e.key == pg.K_x:
+                self.radar.show_all_centerlines = not self.radar.show_all_centerlines
+
             # ---------- Commands (modifiers FIRST) ----------
             elif e.key == pg.K_h and self._selected():
                 self._prompt_number("HDG", "Enter heading (0–359)",
@@ -144,7 +182,6 @@ class SimScene(Scene):
                 self._prompt_number("SPD", "Enter speed (kts)",
                                     lambda v: apply_command(self._selected(), SpdCmd(v)))
 
-            # Altitude: Shift+A OR Ctrl+A (preempts plain "A")
             elif e.key == pg.K_a and self._selected() and (mods & (pg.KMOD_SHIFT | pg.KMOD_CTRL)):
                 self._prompt_number("ALT", "Enter altitude (ft)",
                                     lambda v: apply_command(self._selected(), AltCmd(v)))
@@ -165,7 +202,7 @@ class SimScene(Scene):
             elif e.key == pg.K_d and not (mods & (pg.KMOD_SHIFT | pg.KMOD_CTRL | pg.KMOD_ALT | pg.KMOD_META)):
                 self.world.spawn_departure()
 
-        # Mouse: selection / pan / zoom
+        # Mouse
         self.radar.handle_event(e, zoom_step=ZOOM_STEP, zoom_min=ZOOM_MIN, zoom_max=ZOOM_MAX)
 
     # ---------- Update/Draw ----------
@@ -176,7 +213,6 @@ class SimScene(Scene):
             self.hud.sim_time += dt * self.time_scale
             self.world.update(dt * self.time_scale)
 
-        # Banner: show top conflicts
         lines = []
         for c in self.world.conflicts[:3]:
             a = self.world.aircraft[c.pair.a_idx].callsign

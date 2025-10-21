@@ -1,12 +1,13 @@
 from dataclasses import dataclass, field
 from typing import List, Tuple, Optional
-import math, random, time
+import math, random
+
 from .aircraft import Aircraft
 from .conflict import build_conflicts, Proximity
+from .airport import Airport, Runway, RunwayEnd, build_airport
 
 from config import (
-    AIRPORT_ICAO, RUNWAY_HEADING_DEG, RUNWAY_LENGTH_FT, RUNWAY_WIDTH_FT,
-    RUNWAY_CENTER_WX, RUNWAY_CENTER_WY,
+    AIRPORT_ICAO, RUNWAYS_DEF, DEFAULT_ACTIVE_ARRIVAL, DEFAULT_ACTIVE_DEPARTURE,
     ARRIVAL_RING_RADIUS_NM, ARRIVAL_MIN_ALT_FT, ARRIVAL_MAX_ALT_FT,
     ARRIVAL_MIN_SPD_KTS, ARRIVAL_MAX_SPD_KTS,
     DEPARTURE_INIT_ALT_FT, DEPARTURE_INIT_SPD_KTS, DEPARTURE_CLIMB_FPM,
@@ -17,37 +18,17 @@ from config import (
 FT_PER_NM = 6076.12
 
 @dataclass
-class Runway:
-    heading_deg: float
-    length_ft: float
-    width_ft: float
-    center_wx: float
-    center_wy: float
-
-    def endpoints(self) -> Tuple[Tuple[float, float], Tuple[float, float]]:
-        half_len_nm = (self.length_ft / FT_PER_NM) / 2.0
-        hdg_rad = math.radians(self.heading_deg)
-        dx = math.sin(hdg_rad) * half_len_nm
-        dy = math.cos(hdg_rad) * half_len_nm
-        a = (self.center_wx - dx, self.center_wy - dy)
-        b = (self.center_wx + dx, self.center_wy + dy)
-        return a, b
-
-@dataclass
 class World:
-    icao: str
-    runway: Runway
+    airport: Airport
     fixes: List[Tuple[str, float, float]] = field(default_factory=list)
     aircraft: List[Aircraft] = field(default_factory=list)
     next_seq: int = 1
 
-    # runtime state
     selected: Optional[Aircraft] = None
     conflicts: List[Proximity] = field(default_factory=list)
-
-    # trail timing
     _trail_accum: float = 0.0
 
+    # ----- Fixes -----
     def seed_fixes(self):
         self.fixes = [
             ("NORTH", 0.0, 12.0),
@@ -65,22 +46,41 @@ class World:
                 return fx
         return None
 
+    # ----- Active runway ends -----
+    def get_active_arrival_end(self) -> RunwayEnd:
+        return self.airport.active_arrival
+
+    def get_active_departure_end(self) -> RunwayEnd:
+        return self.airport.active_departure
+
+    def cycle_active_arrival(self):
+        self.airport.cycle_arrival()
+
+    def cycle_active_departure(self):
+        self.airport.cycle_departure()
+
+    # ----- Spawning -----
     def spawn_arrival(self) -> Aircraft:
+        """Spawn far from field (on ring) and aim toward active ARR end threshold."""
+        end = self.get_active_arrival_end()
         brg = random.uniform(0, 360)
         brg_rad = math.radians(brg)
-        wx = self.runway.center_wx + math.sin(brg_rad) * ARRIVAL_RING_RADIUS_NM
-        wy = self.runway.center_wy + math.cos(brg_rad) * ARRIVAL_RING_RADIUS_NM
+        # position on ring
+        wx = end.threshold_wx + math.sin(brg_rad) * ARRIVAL_RING_RADIUS_NM
+        wy = end.threshold_wy + math.cos(brg_rad) * ARRIVAL_RING_RADIUS_NM
 
         alt = random.uniform(ARRIVAL_MIN_ALT_FT, ARRIVAL_MAX_ALT_FT)
         spd = random.uniform(ARRIVAL_MIN_SPD_KTS, ARRIVAL_MAX_SPD_KTS)
-        vec_to_field = math.degrees(math.atan2(self.runway.center_wx - wx, self.runway.center_wy - wy)) % 360
+
+        # heading roughly toward threshold
+        vec_to_thr = math.degrees(math.atan2(end.threshold_wx - wx, end.threshold_wy - wy)) % 360
 
         ac = Aircraft(
             callsign=f"Z{self.next_seq:03d}",
             wx=wx, wy=wy, alt_ft=alt,
-            hdg_deg=vec_to_field, spd_kts=spd, vs_fpm=0.0,
+            hdg_deg=vec_to_thr, spd_kts=spd, vs_fpm=0.0,
             is_arrival=True,
-            tgt_hdg_deg=vec_to_field,
+            tgt_hdg_deg=vec_to_thr,
             tgt_alt_ft=None, tgt_spd_kts=spd
         )
         self.next_seq += 1
@@ -88,11 +88,13 @@ class World:
         return ac
 
     def spawn_departure(self) -> Aircraft:
-        hdg = self.runway.heading_deg
+        """Spawn at active DEP end threshold and accelerate/climb along its course."""
+        end = self.get_active_departure_end()
+        hdg = end.course_deg
         ac = Aircraft(
             callsign=f"Z{self.next_seq:03d}",
-            wx=self.runway.center_wx,
-            wy=self.runway.center_wy,
+            wx=end.threshold_wx,
+            wy=end.threshold_wy,
             alt_ft=DEPARTURE_INIT_ALT_FT,
             hdg_deg=hdg,
             spd_kts=DEPARTURE_INIT_SPD_KTS,
@@ -106,11 +108,12 @@ class World:
         self.aircraft.append(ac)
         return ac
 
+    # ----- Update loop -----
     def update(self, dt: float):
         for ac in self.aircraft:
             ac.update(dt)
 
-        # Trails sampling
+        # Trails
         if TRAILS_ENABLED:
             self._trail_accum += dt
             if self._trail_accum >= TRAIL_SAMPLE_SEC:
@@ -127,16 +130,18 @@ class World:
             sep_lat_nm=LATERAL_SEP_NM, sep_vert_ft=VERTICAL_SEP_FT
         )
 
+# ----- Factory -----
 def make_default_world(rng_seed: Optional[int] = None) -> World:
     if rng_seed is not None:
         random.seed(rng_seed)
-    rw = Runway(
-        heading_deg=RUNWAY_HEADING_DEG,
-        length_ft=RUNWAY_LENGTH_FT,
-        width_ft=RUNWAY_WIDTH_FT,
-        center_wx=RUNWAY_CENTER_WX,
-        center_wy=RUNWAY_CENTER_WY,
+
+    airport = build_airport(
+        AIRPORT_ICAO, RUNWAYS_DEF,
+        default_arr=DEFAULT_ACTIVE_ARRIVAL,
+        default_dep=DEFAULT_ACTIVE_DEPARTURE
+        # active ends can be changed at runtime
     )
-    w = World(icao=AIRPORT_ICAO, runway=rw)
+
+    w = World(airport=airport)
     w.seed_fixes()
     return w
