@@ -8,6 +8,7 @@ Sami Munir | samidmunir@outlook.com | Rutgers University
 
 - Hello Go
 - Variables
+- Functions
 
 ## Tutorials
 
