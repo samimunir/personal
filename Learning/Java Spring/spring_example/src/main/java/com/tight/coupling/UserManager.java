@@ -2,9 +2,9 @@ package com.tight.coupling;
 
 public class UserManager {
 
-    private UserDatabase userDatabase = new UserDatabase();
-    
+    private UserDatabase userDB = new UserDatabase();
+
     public String getUserInfo() {
-        return userDatabase.getUserDetails();
+        return userDB.getUserDetails();
     }
 }

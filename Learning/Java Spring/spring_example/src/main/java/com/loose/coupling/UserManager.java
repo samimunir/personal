@@ -2,13 +2,13 @@ package com.loose.coupling;
 
 public class UserManager {
 
-    private UserDataProvider userDataProvider;
+    private UserDataProvider userDP;
 
     public UserManager(UserDataProvider userDataProvider) {
-        this.userDataProvider = userDataProvider;
+        this.userDP = userDataProvider; 
     }
-    
+
     public String getUserInfo() {
-        return this.userDataProvider.getUserDetails();
+        return this.userDP.getUserDetails();
     }
 }
