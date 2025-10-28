@@ -36,6 +36,11 @@ Sami Munir | samidmunir@outlook.com | Rutgers University
     - @PostMapping
 - Spring Boot
 
+- **Projects**
+
+  1. Hello World RESTful API (Spring Boot)
+  2. Ecommerce Project
+
 ## Tutorials
 
 ## Projects
