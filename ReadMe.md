@@ -29,6 +29,11 @@ Sami Munir | samidmunir@outlook.com | Rutgers University
     - Component-scan
     - @Autowired
     - @Qualifier
+    - @SpringbootApplication
+    - @RestController
+    - @PathVariable
+    - @GetMapping
+    - @PostMapping
 - Spring Boot
 
 ## Tutorials
