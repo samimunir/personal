@@ -21,6 +21,10 @@ Sami Munir | samidmunir@outlook.com | Rutgers University
   - XML
   - Beans
   - ApplicationContext
+  - Autowiring
+    - type
+    - name
+    - constructor
 - Spring Boot
 
 ## Tutorials
