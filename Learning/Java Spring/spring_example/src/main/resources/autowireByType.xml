@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- bean definitions here -->
+    <bean id="specification" class="com.example.autowire.type.Specification">
+        <property name="make" value="Honda" />
+        <property name="model" value="2023 Accord EX" />
+    </bean>
+
+    <!-- <bean id="specification_v2" class="com.example.autowire.type.Specification">
+        <property name="make" value="BMW" />
+        <property name="model" value="2026 M340i" />
+    </bean> -->
+
+    <!-- Name of bean should be same as member/attribute variable name (by calling the setter method <setter_injection>). -->
+
+    <!-- Cannot have more than one bean with the same name. -->
+
+    <bean id="myCar" class="com.example.autowire.type.Car" autowire="byType">
+    </bean>
+
+</beans>
