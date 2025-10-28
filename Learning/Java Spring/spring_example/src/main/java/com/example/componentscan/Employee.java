@@ -1,14 +1,22 @@
 package com.example.componentscan;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 // Annotate the class as a Spring component with the name "employee"
 @Component("employee")
 public class Employee {
 
+    @Value("001")
     private int employeeID;
+
+    @Value("John")
     private String firstName;
+
+    @Value("Doe")
     private String lastName;
+
+    @Value("100000.0")
     private double salary;
 
     public void setEmployeeID(int employeeID) {
