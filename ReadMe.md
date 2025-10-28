@@ -14,6 +14,11 @@ Sami Munir | samidmunir@outlook.com | Rutgers University
 
 - Spring
   - Tight vs. loose coupling
+  - Dependency injection
+  - Inversion of Control (IOC)
+  - XML
+  - Beans
+  - ApplicationContext
 - Spring Boot
 
 ## Tutorials

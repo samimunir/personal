@@ -6,7 +6,7 @@
 
     <!-- bean definitions here -->
     <bean id="myBean" class="car.example.bean.MyBean">
-        <property name="message" value="I am a first bean!"/>
+        <property name="message" value="I am a first bean!" />
     </bean>
 
 </beans>
