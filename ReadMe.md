@@ -25,6 +25,7 @@ Sami Munir | samidmunir@outlook.com | Rutgers University
     - type
     - name
     - constructor
+  - Annotations
 - Spring Boot
 
 ## Tutorials
