@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- bean definitions here -->
+    <bean id="specification" class="com.example.autowire.constructor.Specification">
+        <property name="make" value="Honda" />
+        <property name="model" value="2023 Accord EX" />
+    </bean>
+
+    <!-- When using autowiring by constructor, you cannot have more than one bean of the class your are creating the bean for. -->
+
+    <!-- <bean id="specification_v2" class="com.example.autowire.constructor.Specification">
+        <property name="make" value="BMW" />
+        <property name="model" value="2026 M340i" />
+    </bean> -->
+
+    <bean id="myCar" class="com.example.autowire.constructor.Car" autowire="constructor">
+    </bean>
+
+</beans>
