@@ -16,6 +16,7 @@ Sami Munir | samidmunir@outlook.com | Rutgers University
   - Tight vs. loose coupling
   - Dependency injection
     - Constructor injection
+    - Setter injection
   - Inversion of Control (IOC)
   - XML
   - Beans
