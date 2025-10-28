@@ -27,6 +27,8 @@ Sami Munir | samidmunir@outlook.com | Rutgers University
     - constructor
   - Annotations
     - Component-scan
+    - @Autowired
+    - @Qualifier
 - Spring Boot
 
 ## Tutorials
