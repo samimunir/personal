@@ -12,6 +12,10 @@ Sami Munir | samidmunir@outlook.com | Rutgers University
 
 ### Java Spring Framework - [uDemy Java Spring Boot: Professional eCommerce Project Masterclass](https://www.udemy.com/course/spring-boot-using-intellij-build-a-real-world-project/)
 
+- Spring
+  - Tight vs. loose coupling
+- Spring Boot
+
 ## Tutorials
 
 ## Projects
