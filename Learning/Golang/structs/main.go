@@ -2,6 +2,15 @@ package main
 
 import "fmt"
 
+/*
+	We can bind functions to a struct type by using receiver functions.
+	- this allows us to create methods that operate on struct instances.
+*/
+type rectangle struct {
+	Width float64
+	Height float64
+}
+
 func main() {
 	/*
 		Golang reference docs:
@@ -97,4 +106,16 @@ func main() {
 		screenSize: 14.0,
 	}
 	fmt.Println("\nnewLaptop<embedded struct with composite literal>:", newLaptop)
+
+	myRectangle := rectangle {
+		Width: 5.0,
+		Height: 3.0,
+	}
+	fmt.Println("\nmyRectangle<struct>:", myRectangle)
+	fmt.Println("Area of myRectangle:", myRectangle.Area())
+}
+
+// Receiver function to calculate area of rectangle
+func (r rectangle) Area() float64 {
+	return r.Width * r.Height
 }
