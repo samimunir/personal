@@ -8,6 +8,7 @@ import About from "./pages/About";
 import Writing from "./pages/Writing";
 import Contact from "./pages/Contact";
 import "./styles/globals.css";
+import PostPage from "./pages/PostPage";
 
 const router = createBrowserRouter([
   {
@@ -18,6 +19,7 @@ const router = createBrowserRouter([
       { path: "work", element: <Work /> },
       { path: "about", element: <About /> },
       { path: "writing", element: <Writing /> },
+      { path: "writing/:slug", element: <PostPage /> },
       { path: "contact", element: <Contact /> },
     ],
   },
