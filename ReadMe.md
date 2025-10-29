@@ -46,6 +46,8 @@ Sami Munir | samidmunir@outlook.com | Rutgers University
 
 ## Projects
 
+### developer-portfolio
+
 ### Air Traffic Control Sim
 
 ## LeetCode Mastery
