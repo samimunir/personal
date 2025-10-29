@@ -119,3 +119,5 @@ func main() {
 func (r rectangle) Area() float64 {
 	return r.Width * r.Height
 }
+
+// 1:34:40 - Interfaces
