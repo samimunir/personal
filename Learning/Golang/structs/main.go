@@ -37,12 +37,12 @@ func main() {
 		Default value assignment to struct members.
 		- use the . operatore to access struct fields.
 	*/
-	myCarEngine := engine{}
+	myCarEngine := engine {}
 	myCarEngine.Cylinders = 4
 	myCarEngine.Displacement = 1.5
 	myCarEngine.Horsepower = 192
 	
-	myCar := car{}
+	myCar := car {}
 	myCar.Make = "Honda"
 	myCar.Model = "Accord EX"
 	myCar.Year = 2023
@@ -63,4 +63,38 @@ func main() {
 		DepartureTime: "01:45 UTC",
 	}
 	fmt.Println("\nrandom_flight<anonymous struct>:", random_flight)
+
+	/*
+		Go is not an object-oriented language, however embedded structs provide a kind of data-only inheritance.
+		- a way to elevate and share fields between struct definitions.
+	*/
+	type computer struct {
+		Brand string
+		Model string
+		Processor string
+		GPU string
+	}
+
+	type laptop struct {
+		computer // embedded struct -> will have access to all fields of computer struct (directly).
+		screenSize float32
+	}
+	myLaptop := laptop{}
+	myLaptop.Brand = "Apple"
+	myLaptop.Model = "MacBook Air"
+	myLaptop.Processor = "M4"
+	myLaptop.GPU = "Integrated"
+	myLaptop.screenSize = 13.6
+	fmt.Println("\nmyLaptop<embedded struct>:", myLaptop)
+
+	newLaptop := laptop {
+		computer: computer {
+			Brand: "Lenovo",
+			Model: "Yoga 7i Slim",
+			Processor: "Snapdragon X Elite",
+			GPU: "Integrated",
+		},
+		screenSize: 14.0,
+	}
+	fmt.Println("\nnewLaptop<embedded struct with composite literal>:", newLaptop)
 }
