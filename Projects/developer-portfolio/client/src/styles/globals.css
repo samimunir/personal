@@ -10,9 +10,15 @@ body,
   height: 100%;
 }
 
+/* Base dark surface and legibility tweaks. */
 body {
   background: #0b0e11;
   color: #fff;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Utility: hide focus outline only when using mouse. */
+:focus:not(:focus-visible) {
+  outline: none;
 }
