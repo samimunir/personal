@@ -35,6 +35,7 @@ Sami Munir | samidmunir@outlook.com | Rutgers University
     - @PathVariable
     - @GetMapping
     - @PostMapping
+    - @RequestMapping
 - Spring Boot
 
 - **Projects**

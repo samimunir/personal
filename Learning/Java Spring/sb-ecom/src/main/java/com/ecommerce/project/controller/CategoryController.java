@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -17,6 +18,7 @@ import com.ecommerce.project.model.Category;
 import com.ecommerce.project.service.CategoryService;
 
 @RestController
+@RequestMapping("/api")
 public class CategoryController {
 
     private CategoryService categoryService;
@@ -25,19 +27,21 @@ public class CategoryController {
         this.categoryService = categoryService;
     }
 
-    @GetMapping("/api/public/categories")
+    @GetMapping("/public/categories")
+    // @RequestMapping(value = "/api/public/categories", method = RequestMethod.GET)
     public ResponseEntity<List<Category>> getAllCategories() {
         List<Category> categories = this.categoryService.getAllCategories();
         return new ResponseEntity<>(categories, HttpStatus.OK);
     }
 
-    @PostMapping("/api/public/categories")
+    @PostMapping("/public/categories")
+    // @RequestMapping(value = "/api/public/categories", method = RequestMethod.POST)
     public ResponseEntity<String> createCategory(@RequestBody Category category) {
         this.categoryService.createCategory(category);
         return new ResponseEntity<>("Category created successfully.", HttpStatus.CREATED);
     }
 
-    @DeleteMapping("/api/admin/categories/{categoryID}")
+    @DeleteMapping("/admin/categories/{categoryID}")
     public ResponseEntity<String> deleteCategory(@PathVariable Long categoryID) {
         try {
             String status = categoryService.deleteCategory(categoryID);
@@ -47,7 +51,7 @@ public class CategoryController {
         }
     }
 
-    @PutMapping("/api/admin/categories/{categoryID}")
+    @PutMapping("/admin/categories/{categoryID}")
     public ResponseEntity<String> updateCategory(@RequestBody Category category, @PathVariable Long categoryID) {
         try {
             Category savedCategory = this.categoryService.updateCategory(category, categoryID);
