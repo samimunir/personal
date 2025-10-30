@@ -1,5 +1,4 @@
-import { useRef } from "react";
-
+import { useEffect, useRef } from "react";
 export default function TiltCard({
   children,
   className = "",
@@ -8,28 +7,42 @@ export default function TiltCard({
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  function onMouseMove(e: React.MouseEvent) {
+  useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const r = el.getBoundingClientRect();
-    const x = (e.clientX - r.left) / r.width;
-    const y = (e.clientY - r.top) / r.height;
-    const rx = (0.5 - y) * 8;
-    const ry = (x - 0.5) * 8;
-    el.style.transform = `perspective(800px) rotateX(${rx}deg) rotateY(${ry}deg)`;
-  }
-  function onLeave() {
-    const el = ref.current;
-    if (el)
-      el.style.transform = "perspective(800px) rotateX(0deg) rotateY(0deg)";
-  }
+    let raf = 0;
+    let rx = 0,
+      ry = 0;
+    function onMove(e: MouseEvent) {
+      const r = el.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width;
+      const y = (e.clientY - r.top) / r.height;
+      rx = (0.5 - y) * 6;
+      ry = (x - 0.5) * 6;
+      if (!raf) {
+        raf = requestAnimationFrame(apply);
+      }
+    }
+    function apply() {
+      el.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) translateZ(0)`;
+      raf = 0;
+    }
+    function onLeave() {
+      el.style.transform =
+        "perspective(900px) rotateX(0deg) rotateY(0deg) translateZ(0)";
+    }
+    el.addEventListener("mousemove", onMove);
+    el.addEventListener("mouseleave", onLeave);
+    return () => {
+      el.removeEventListener("mousemove", onMove);
+      el.removeEventListener("mouseleave", onLeave);
+    };
+  }, []);
   return (
     <div
       ref={ref}
-      onMouseMove={onMouseMove}
-      onMouseLeave={onLeave}
       className={
-        "transition-transform duration-200 will-change-transform " + className
+        "transition-transform duration-150 will-change-transform " + className
       }
     >
       {children}
