@@ -26,7 +26,10 @@ export default function TOC({
   }, [sections]);
 
   return (
-    <nav className="sticky top-24 hidden lg:block">
+    <nav
+      className="hidden lg:block sticky top-24 self-start w-[260px] shrink-0 pr-4 max-h-[calc(100vh-7rem)] overflow-auto"
+      aria-label="On this page"
+    >
       <ul className="space-y-2">
         {sections.map((s) => (
           <li key={s.id}>
@@ -47,3 +50,9 @@ export default function TOC({
     </nav>
   );
 }
+
+// ──────────────────────────────────────────────────────────────
+// OPTIONAL: To move TOC to the right rail instead, swap the child order
+// inside the BODY grid and change the template to:
+//   grid lg:grid-cols-[minmax(0,1fr)_280px]
+// This will place the TOC on the outer edge with the same stickiness.
