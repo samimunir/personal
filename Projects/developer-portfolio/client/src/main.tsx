@@ -7,8 +7,9 @@ import Work from "./pages/Work";
 import About from "./pages/About";
 import Writing from "./pages/Writing";
 import Contact from "./pages/Contact";
-import "./styles/globals.css";
 import PostPage from "./pages/PostPage";
+import CaseStudy from "./pages/CaseStudy";
+import "./styles/globals.css";
 
 const router = createBrowserRouter([
   {
@@ -17,6 +18,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: "work", element: <Work /> },
+      { path: "work/:slug", element: <CaseStudy /> },
       { path: "about", element: <About /> },
       { path: "writing", element: <Writing /> },
       { path: "writing/:slug", element: <PostPage /> },
