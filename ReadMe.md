@@ -35,7 +35,12 @@ Sami Munir | samidmunir@outlook.com | Rutgers University
     - @PathVariable
     - @GetMapping
     - @PostMapping
+    - @DeleteMapping
+    - @PutMapping
     - @RequestMapping
+    - @RequestBody
+  - Http Status Codes
+  - ResponseEntity
 - Spring Boot
 
 - **Projects**
