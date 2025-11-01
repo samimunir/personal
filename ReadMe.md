@@ -42,6 +42,8 @@ Sami Munir | samidmunir@outlook.com | Rutgers University
   - Http Status Codes
   - ResponseEntity
 - Spring Boot
+- Spring Data
+- JPA (Java Persistence API)
 
 - **Projects**
 
