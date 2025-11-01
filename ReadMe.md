@@ -45,6 +45,9 @@ Sami Munir | samidmunir@outlook.com | Rutgers University
 - Spring Data
 - JPA (Java Persistence API)
 
+  - @Entity
+  - @Id
+
 - **Projects**
 
   1. Hello World RESTful API (Spring Boot)
