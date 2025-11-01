@@ -43,7 +43,7 @@ Sami Munir | samidmunir@outlook.com | Rutgers University
   - ResponseEntity
 - Spring Boot
 - Spring Data
-- JPA (Java Persistence API)
+- JPA (Jakarta Persistence API)
 
   - @Entity
   - @Id
