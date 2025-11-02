@@ -14,8 +14,6 @@ import com.ecommerce.project.repositories.CategoryRepository;
 @Service
 public class CategoryServiceImpl implements CategoryService {
 
-    private Long nextID = 1L;
-
     @Autowired
     private CategoryRepository categoryRepository;
 
@@ -26,22 +24,13 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public void createCategory(Category category) {
-        category.setCategoryID(nextID++);
         this.categoryRepository.save(category);
     }
 
     @Override
     public String deleteCategory(Long categoryID) {
-        List<Category> categories = this.categoryRepository.findAll();
-        Category category = categories.stream()
-            .filter(c -> c.getCategoryID()
-            .equals(categoryID))
-            .findFirst()
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-
-        if (category == null) {
-            return "Category not found. Failed to delete.";
-        }
+        Category category = this.categoryRepository.findById(categoryID)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Resource not found."));
 
         this.categoryRepository.delete(category);
 
@@ -50,18 +39,16 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Category updateCategory(Category category, Long categoryID) {
-        List<Category> categories = this.categoryRepository.findAll();
-        Optional<Category> optionalCategory = categories.stream()
-            .filter(c -> c.getCategoryID().equals(categoryID))
-            .findFirst();
+        Optional<Category> savedCategoryOptional = this.categoryRepository.findById(categoryID);
 
-        if (optionalCategory.isPresent()) {
-            Category existingCategory = optionalCategory.get();
-            existingCategory.setCategoryName(category.getCategoryName());
-            Category savedCategory = this.categoryRepository.save(existingCategory);
-            return savedCategory;
-        } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found.");
-        }
+        // does the category exist or not (if null).
+        Category savedCategory = savedCategoryOptional
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Resource not found."));
+
+        category.setCategoryID(categoryID);
+    
+        savedCategory = this.categoryRepository.save(category);
+
+        return savedCategory;
     }
 }
