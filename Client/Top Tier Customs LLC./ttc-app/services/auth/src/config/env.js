@@ -2,8 +2,8 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-export const cfg = {
-  port: Number(process.env.PORT) || 8081,
+export const env = {
+  port: Number(process.env.PORT),
   mongoUri: process.env.MONGO_URI,
   jwtSecret: process.env.JWT_SECRET,
   jwtExpires: process.env.JWT_EXPIRES,

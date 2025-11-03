@@ -2,11 +2,11 @@
   "name": "auth",
   "version": "1.0.0",
   "description": "",
-  "main": "src/index.js",
+  "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon src/index.js",
-    "start": "node src/index.js"
+    "dev": "nodemon",
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",

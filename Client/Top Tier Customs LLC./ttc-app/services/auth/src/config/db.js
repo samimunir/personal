@@ -1,13 +1,12 @@
 import mongoose from "mongoose";
-import { mongoUri } from "./env";
+import { env } from "./env.js";
 
-const connect = async () => {
-  if (!mongoUri) {
+export async function connectDB() {
+  if (!env.mongoUri) {
     throw new Error("MONGO_URI missing");
   }
 
-  await mongoose.connect(mongoUri);
-  console.log("Mongo connected -> api/auth");
-};
-
-export default connect;
+  await mongoose
+    .connect(env.mongoUri)
+    .then(console.log(`MongoDB connected -> api/auth`));
+}
