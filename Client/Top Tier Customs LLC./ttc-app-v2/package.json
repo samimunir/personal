@@ -1,0 +1,13 @@
+{
+  "name": "ttc-app-v2",
+  "version": "1.0.0",
+  "description": "Top Tier Customs LLC. Digital Solution",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Sami Munir @Zephiron",
+  "license": "ISC",
+  "type": "commonjs"
+}

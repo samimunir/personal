@@ -1,9 +1,6 @@
 {
-  "name": "ttc-app",
+  "name": "ttc",
   "private": true,
-  "version": "1.0.0",
-  "description": "Top Tier Customs LLC. Digital Solution",
-  "main": "index.js",
   "workspaces": [
     "apps/*",
     "services/*",
@@ -14,13 +11,7 @@
     "build": "npm run build --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "devDependencies": {
-    "@types/node": "^24.9.2",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "concurrently": "^9.2.1"
   }
 }
