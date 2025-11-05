@@ -7,6 +7,8 @@ export const health = (_req, res) => res.json({ ok: true });
 // internal create (called by Payments webhook)
 // body: { paymentIntentId, amount, currency, metadata }
 export const create = asyncHandler(async (req, res) => {
+  console.log("[orders] POST /orders body=", req.body);
+
   const {
     paymentIntentId,
     amount,
