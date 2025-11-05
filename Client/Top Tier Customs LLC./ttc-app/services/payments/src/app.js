@@ -6,17 +6,20 @@ import error from "./middlewares/error.js";
 
 const app = express();
 
-// Stripe webhook needs raw body BEFORE express.json
+// RAW body for Stripe webhook ONLY (must be before any json/body parsing)
 app.use("/webhooks/stripe", express.raw({ type: "application/json" }));
 
+// JSON for everything else
+app.use(express.json());
 app.use(cors({ origin: true }));
-app.use(express.json()); // normal JSON for the rest
+app.use(logger);
+
+// Debug: log request line so we can see what reaches the service
 app.use((req, _res, next) => {
-  // keep rawBody for webhook controller
-  if (req.originalUrl === "/webhooks/stripe") return next();
+  console.log(`[payments] ${req.method} ${req.originalUrl}`);
   next();
 });
-app.use(logger);
+
 app.use(routes);
 app.use(error);
 

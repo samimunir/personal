@@ -1,6 +1,6 @@
 import "dotenv/config";
 
 export const env = {
-  port: Number(process.env.PORT) || 4102,
-  mongoUrl: process.env.MONGO_URL,
+  port: Number(process.env.PORT) || 8082,
+  mongoUri: process.env.MONGO_URI,
 };
