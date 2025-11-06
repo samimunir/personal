@@ -1,30 +1,52 @@
 import { Router } from "express";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import { env } from "../config/env.js";
-import { requireAuth } from "../middlewares/auth.js";
-import { requireRole } from "../middlewares/rbac.js";
 
-const router = Router();
+const r = Router();
 
-// Public proxy (no auth)
-const publicProxy = createProxyMiddleware({
-  target: env.upstream.catalog,
-  changeOrigin: false,
-  xfwd: true,
-});
+// Public browse
+r.use(
+  "/products",
+  createProxyMiddleware({
+    target: `${env.upstream.catalog}/products`,
+    changeOrigin: false,
+    xfwd: true,
+    logLevel: "debug",
+    ignorePath: true, // keep target path exactly "/products"
+  })
+);
 
-// Admin proxy (auth + role)
-const adminProxy = createProxyMiddleware({
-  target: env.upstream.catalog,
-  changeOrigin: false,
-  xfwd: true,
-});
+r.use(
+  "/services",
+  createProxyMiddleware({
+    target: `${env.upstream.catalog}/services`,
+    changeOrigin: false,
+    xfwd: true,
+    logLevel: "debug",
+    ignorePath: true,
+  })
+);
 
-// Public browsing (all subpaths included, no wildcard needed)
-router.use("/products", publicProxy);
-router.use("/services", publicProxy);
+// Admin CRUD (if you’re calling these through the gateway)
+r.use(
+  "/admin/products",
+  createProxyMiddleware({
+    target: `${env.upstream.catalog}/admin/products`,
+    changeOrigin: false,
+    xfwd: true,
+    logLevel: "debug",
+    ignorePath: true,
+  })
+);
+r.use(
+  "/admin/services",
+  createProxyMiddleware({
+    target: `${env.upstream.catalog}/admin/services`,
+    changeOrigin: false,
+    xfwd: true,
+    logLevel: "debug",
+    ignorePath: true,
+  })
+);
 
-// Admin routes (protect, then proxy everything under /admin)
-router.use("/admin", requireAuth, requireRole("ADMIN"), adminProxy);
-
-export default router;
+export default r;
