@@ -9,5 +9,7 @@ export const env = {
     payments: process.env.PAYMENTS_SERVICE_URL || "http://localhost:8083",
     bookings: process.env.BOOKINGS_SERVICE_URL || "http://localhost:8084",
     orders: process.env.ORDERS_SERVICE_URL || "http://localhost:8085",
+    cart: process.env.CART_SERVICE_URL || "http://localhost:8086",
+    inventory: process.env.INVENTORY_SERVICE_URL || "http://localhost:8087",
   },
 };
