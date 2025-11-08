@@ -379,7 +379,7 @@ export default function Products() {
 
       {/* Hero Banner */}
       <section className="relative bg-gradient-to-r from-gray-900 via-black to-gray-900 py-16 border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mt-4 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-black mb-4">
             PREMIUM <span className="text-red-600">PARTS</span>
           </h1>

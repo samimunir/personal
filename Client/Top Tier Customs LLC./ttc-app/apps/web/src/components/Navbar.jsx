@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import { Menu, X, ShoppingCart, User, ChevronDown } from "lucide-react";
+import { useLocation } from "react-router-dom";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [cartCount] = useState(3); // Mock cart count
+
+  const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -41,19 +44,31 @@ export default function Navbar() {
           <div className="hidden md:flex items-center space-x-8">
             <a
               href="/"
-              className="text-gray-300 hover:text-red-600 transition-colors font-medium"
+              className={`${
+                location.pathname === "/"
+                  ? "text-red-600"
+                  : "text-gray-300 hover:text-red-600"
+              } transition-colors font-medium`}
             >
               Home
             </a>
             <a
               href="/shop"
-              className="text-gray-300 hover:text-red-600 transition-colors font-medium"
+              className={`${
+                location.pathname === "/shop"
+                  ? "text-red-600"
+                  : "text-gray-300 hover:text-red-600"
+              } transition-colors font-medium`}
             >
               Shop
             </a>
             <a
               href="/services"
-              className="text-gray-300 hover:text-red-600 transition-colors font-medium"
+              className={`${
+                location.pathname === "/services"
+                  ? "text-red-600"
+                  : "text-gray-300 hover:text-red-600"
+              } transition-colors font-medium`}
             >
               Services
             </a>
