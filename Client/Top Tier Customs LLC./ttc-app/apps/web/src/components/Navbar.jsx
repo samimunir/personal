@@ -9,6 +9,8 @@ export default function Navbar() {
 
   const location = useLocation();
 
+  const [loggedIn, setLoggedIn] = useState(true);
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
@@ -74,7 +76,11 @@ export default function Navbar() {
             </a>
             <a
               href="/about"
-              className="text-gray-300 hover:text-red-600 transition-colors font-medium"
+              className={`${
+                location.pathname === "/about"
+                  ? "text-red-600"
+                  : "text-gray-300 hover:text-red-600"
+              } transition-colors font-medium`}
             >
               About
             </a>
@@ -100,13 +106,36 @@ export default function Navbar() {
                 </span>
               )}
             </a>
-
-            {/* User/Login */}
+            {loggedIn ? (
+              <a href="/dashboard" className="hidden md:block">
+                <button className="bg-red-600 hover:bg-red-700 px-6 py-2 rounded-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-red-600/50">
+                  Dashboard
+                </button>
+              </a>
+            ) : (
+              <a href="/login" className="hidden md:block">
+                <button className="bg-red-600 hover:bg-red-700 px-6 py-2 rounded-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-red-600/50">
+                  Sign In
+                </button>
+              </a>
+            )}
+            {/* User/Login
+            {" "}
             <a href="/login" className="hidden md:block">
+              {" "}
               <button className="bg-red-600 hover:bg-red-700 px-6 py-2 rounded-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-red-600/50">
-                Sign In
+                // Sign In //{" "}
               </button>
+              {" "}
             </a>
+            {" "}
+            <a href="/dashboard" className="hidden md:block">
+              //{" "}
+              <button className="bg-red-600 hover:bg-red-700 px-6 py-2 rounded-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-red-600/50">
+                // Dashboard //{" "}
+              </button>
+              //{" "}
+            </a> */}
 
             {/* Mobile Menu Button */}
             <button
