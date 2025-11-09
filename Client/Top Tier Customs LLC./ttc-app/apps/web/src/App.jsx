@@ -5,7 +5,9 @@ import Landing from "./pages/Landing";
 import Products from "./pages/Products";
 import Services from "./pages/Services";
 import About from "./pages/About";
+import Contact from "./pages/Contact";
 import CustomerDashboard from "./pages/CustomerDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const App = () => {
   return (
@@ -44,6 +46,14 @@ const App = () => {
         }
       />
       <Route
+        path="/contact"
+        element={
+          <Main>
+            <Contact />
+          </Main>
+        }
+      />
+      <Route
         path="/dashboard"
         element={
           <Main>
@@ -51,6 +61,7 @@ const App = () => {
           </Main>
         }
       />
+      <Route path="/admin/dashboard" element={<AdminDashboard />} />
     </Routes>
   );
 };

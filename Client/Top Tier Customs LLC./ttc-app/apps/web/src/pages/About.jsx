@@ -105,9 +105,9 @@ export default function About() {
       <section className="relative border-b border-gray-800 bg-gradient-to-r from-gray-900 via-black to-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="max-w-3xl">
-            <p className="uppercase tracking-widest text-xs text-gray-400">
+            {/* <p className="uppercase tracking-widest text-xs text-gray-400">
               About
-            </p>
+            </p> */}
             <h1 className="mt-3 text-4xl sm:text-5xl md:text-6xl font-black leading-tight">
               Built for <span className="text-red-600">enthusiasts</span>.
               Proven for <span className="text-red-600">everyday</span>.

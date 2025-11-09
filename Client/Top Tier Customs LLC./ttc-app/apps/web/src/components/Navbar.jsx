@@ -86,7 +86,11 @@ export default function Navbar() {
             </a>
             <a
               href="/contact"
-              className="text-gray-300 hover:text-red-600 transition-colors font-medium"
+              className={`${
+                location.pathname === "/contact"
+                  ? "text-red-600"
+                  : "text-gray-300 hover:text-red-600"
+              } transition-colors font-medium`}
             >
               Contact
             </a>
