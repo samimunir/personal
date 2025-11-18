@@ -4,6 +4,6 @@ import authProxy from "../proxy/auth.proxy.js";
 
 const authRouter = express.Router();
 
-authRouter.use(jsonParser, authProxy);
+authRouter.use(authProxy);
 
 export default authRouter;
