@@ -152,3 +152,74 @@ export const logout = async (req, res, next) => {
     next(err);
   }
 };
+
+export const refreshAccessToken = async (req, res, next) => {
+  try {
+    const oldRefreshToken =
+      req.body.refreshToken || req.headers["x-refresh-token"];
+    if (!oldRefreshToken) {
+      const err = new Error("Refresh token is required.");
+      err.status = 400;
+
+      throw err;
+    }
+
+    const payload = verifyRefreshToken(oldRefreshToken);
+
+    const user = await User.findById(payload.sub);
+    if (!user) {
+      const err = new Error("User not found or inactive.");
+      err.status = 401;
+
+      throw err;
+    }
+
+    const hashedOld = hashToken(oldRefreshToken);
+
+    const exists = user.refreshTokens.some((rt) => rt.token === hashedOld);
+    if (!exists) {
+      const err = new Error("Refresh token not recognized.");
+      err.status = 401;
+
+      throw err;
+    }
+
+    const { accessToken, refreshToken } = await generateAndStoreTokens(
+      user,
+      oldRefreshToken
+    );
+
+    return res.status(200).json({
+      message: "Tokens refreshed",
+      tokens: { accessToken, refreshToken },
+    });
+  } catch (err) {
+    if (err.name === "TokenExpiredError") {
+      err.status = 401;
+      err.message = "Refresh token expired.";
+    } else if (err.name === "JsonWebTokenError") {
+      err.status = 401;
+      err.message = "Invalid refresh token.";
+    }
+
+    next(err);
+  }
+};
+
+export const getMe = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id).select(
+      "-passwordHash -refreshTokens -passwordResetToken -passwordResetExpires"
+    );
+    if (!user) {
+      const err = new Error("User not found.");
+      err.status = 404;
+
+      throw err;
+    }
+
+    return res.status(200).json({ user });
+  } catch (err) {
+    next(err);
+  }
+};
