@@ -4,17 +4,23 @@ const userSchema = new mongoose.Schema(
   {
     email: {
       type: String,
+      lowercase: true,
       unique: true,
       index: true,
       required: true,
     },
-    passwordHash: {
+    password: {
       type: String,
       required: true,
     },
-    roles: {
-      type: [String],
-      default: ["CUSTOMER"],
+    role: {
+      type: String,
+      enum: ["customer", "admin"],
+      default: "customer",
+    },
+    refreshTokenVersion: {
+      type: Number,
+      default: 0,
     },
     profile: {
       firstName: {
@@ -42,6 +48,6 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const User = mongoose.model("users", userSchema);
+const User = mongoose.model("User", userSchema);
 
 export default User;

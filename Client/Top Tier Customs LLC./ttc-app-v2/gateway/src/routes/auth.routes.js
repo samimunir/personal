@@ -1,41 +1,47 @@
-import { Router } from "express";
+import express from "express";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import env from "../config/env.js";
 
+const router = express.Router();
+
 const authProxy = createProxyMiddleware({
-  target: env.UPSTREAM.AUTH,
+  target: env.UPSTREAM.AUTH, // e.g. "http://localhost:4001"
   changeOrigin: true,
   xfwd: true,
-  preserveHeaderKeyCase: true,
+  logLevel: "debug",
+  pathRewrite: (path, req) => {
+    // If client hits:   /api/auth/register
+    // Auth service sees: /auth/register
+    return path.replace(/^\/api\/auth/, "/auth");
+  },
 
   onProxyReq(proxyReq, req) {
-    const isJSON =
-      req.headers["content-type"] &&
-      req.headers["content-type"].includes("application/json");
+    // Only care about JSON bodies
+    const contentType = req.headers["content-type"] || "";
+    const isJSON = contentType.includes("application/json");
 
-    if (isJSON && req.body && Object.keys(req.body).length) {
-      const body = JSON.stringify(req.body);
+    if (!isJSON) return;
+    if (!req.body || !Object.keys(req.body).length) return;
 
-      proxyReq.setHeader("Content-Type", "application/json");
-      proxyReq.setHeader("Content-Length", Buffer.byteLength(body));
-      proxyReq.write(body);
-    }
+    const bodyData = JSON.stringify(req.body);
 
-    if (req.user) {
-      proxyReq.setHeader("x-user-id", req.user.id);
-      proxyReq.setHeader("x-user-roles", (req.user.roles || []).join(","));
-    }
+    // Make sure headers/body match what we're sending
+    proxyReq.setHeader("Content-Type", "application/json");
+    proxyReq.setHeader("Content-Length", Buffer.byteLength(bodyData));
+
+    // Write body to upstream request
+    proxyReq.write(bodyData);
   },
 
   onError(err, _req, res) {
-    console.error("[AUTH PROXY ERROR]", this.target, err?.message || err);
-
+    console.error("[AUTH PROXY ERROR]", err?.message || err);
     if (!res.headersSent) {
-      return res.status(502).json({ error: "UPSTREAM.AUTH_UNREACHABLE" });
+      res.status(502).json({ error: "UPSTREAM.AUTH_UNREACHABLE" });
     }
   },
 });
 
-export const authRouter = Router();
+// ✅ Attach JSON parser ONLY on this router, BEFORE the proxy
+router.use("/auth", express.json(), authProxy);
 
-authRouter.use("/auth", authProxy);
+export const authRouter = router;
