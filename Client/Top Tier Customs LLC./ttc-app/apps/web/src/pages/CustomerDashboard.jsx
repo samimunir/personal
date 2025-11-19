@@ -21,6 +21,7 @@ import {
   Phone,
   Home,
 } from "lucide-react";
+import { useAuth } from "../context/AuthContext.jsx";
 
 // Mock customer data
 const mockCustomer = {
@@ -172,6 +173,8 @@ export default function CustomerDashboard() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [selectedBooking, setSelectedBooking] = useState(null);
 
+  const { user, logout } = useAuth();
+
   const getOrderStatusColor = (status) => {
     switch (status) {
       case "delivered":
@@ -249,8 +252,8 @@ export default function CustomerDashboard() {
 
   return (
     <div className="bg-black text-white min-h-screen">
-      {/* Header */}
-      <header className="bg-gradient-to-r from-gray-900 to-black border-b border-gray-800">
+      {/* Header
+      <header className="bg-linear-to-r from-gray-900 to-black border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-8">
@@ -286,19 +289,19 @@ export default function CustomerDashboard() {
             </button>
           </div>
         </div>
-      </header>
+      </header> */}
 
       {/* Dashboard Layout */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="mt-14 flex flex-col lg:flex-row gap-8">
           {/* Sidebar */}
-          <aside className="lg:w-64 flex-shrink-0">
-            <div className="bg-gradient-to-br from-gray-900 to-black rounded-xl border-2 border-gray-800 p-6 mb-6">
+          <aside className="lg:w-64 shrink-0">
+            <div className="bg-linear-to-br from-gray-900 to-black rounded-xl border-2 border-gray-800 p-6 mb-6">
               <div className="text-center mb-6">
                 <div className="relative inline-block">
                   <img
                     src={customer.avatar}
-                    alt={`${customer.firstName} ${customer.lastName}`}
+                    alt={`${user.profile.firstName} ${user.profile.lastName}`}
                     className="w-24 h-24 rounded-full border-4 border-red-600 mx-auto"
                   />
                   <button className="absolute bottom-0 right-0 bg-red-600 hover:bg-red-700 p-2 rounded-full transition-colors">
@@ -306,16 +309,22 @@ export default function CustomerDashboard() {
                   </button>
                 </div>
                 <h2 className="text-xl font-bold mt-4">
-                  {customer.firstName} {customer.lastName}
+                  {user.profile.firstName} {user.profile.lastName}
                 </h2>
-                <p className="text-gray-400 text-sm">{customer.email}</p>
+                <p className="text-gray-400 text-sm">{user.email}</p>
                 <div className="mt-4 text-xs text-gray-500">
                   Member since {new Date(customer.createdAt).getFullYear()}
                 </div>
+                <button
+                  className="mt-2 uppercase hover:bg-red-600 hover:scale-105 px-2 py-1 rounded-md border-2 font-medium border-red-600 text-sm transition-all"
+                  onClick={() => logout()}
+                >
+                  Logout
+                </button>
               </div>
             </div>
 
-            <nav className="bg-gradient-to-br from-gray-900 to-black rounded-xl border-2 border-gray-800 overflow-hidden">
+            <nav className="bg-linear-to-br from-gray-900 to-black rounded-xl border-2 border-gray-800 overflow-hidden">
               {[
                 {
                   id: "overview",
@@ -371,7 +380,7 @@ export default function CustomerDashboard() {
               <div className="space-y-6">
                 <div>
                   <h1 className="text-3xl font-black mb-2">
-                    Welcome back, {customer.firstName}!
+                    Welcome back, {user.profile.firstName}!
                   </h1>
                   <p className="text-gray-400">
                     Here's what's happening with your account.
@@ -380,7 +389,7 @@ export default function CustomerDashboard() {
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="bg-gradient-to-br from-gray-900 to-black rounded-xl border-2 border-gray-800 p-6">
+                  <div className="bg-linear-to-br from-gray-900 to-black rounded-xl border-2 border-gray-800 p-6">
                     <div className="flex items-center justify-between mb-2">
                       <ShoppingBag className="w-8 h-8 text-red-600" />
                       <span className="text-3xl font-black">
@@ -389,7 +398,7 @@ export default function CustomerDashboard() {
                     </div>
                     <p className="text-gray-400 text-sm">Total Orders</p>
                   </div>
-                  <div className="bg-gradient-to-br from-gray-900 to-black rounded-xl border-2 border-gray-800 p-6">
+                  <div className="bg-linear-to-br from-gray-900 to-black rounded-xl border-2 border-gray-800 p-6">
                     <div className="flex items-center justify-between mb-2">
                       <Calendar className="w-8 h-8 text-blue-600" />
                       <span className="text-3xl font-black">
@@ -398,7 +407,7 @@ export default function CustomerDashboard() {
                     </div>
                     <p className="text-gray-400 text-sm">Upcoming Bookings</p>
                   </div>
-                  <div className="bg-gradient-to-br from-gray-900 to-black rounded-xl border-2 border-gray-800 p-6">
+                  <div className="bg-linear-to-br from-gray-900 to-black rounded-xl border-2 border-gray-800 p-6">
                     <div className="flex items-center justify-between mb-2">
                       <Package className="w-8 h-8 text-green-600" />
                       <span className="text-3xl font-black">
@@ -407,7 +416,7 @@ export default function CustomerDashboard() {
                     </div>
                     <p className="text-gray-400 text-sm">Completed Orders</p>
                   </div>
-                  <div className="bg-gradient-to-br from-gray-900 to-black rounded-xl border-2 border-gray-800 p-6">
+                  <div className="bg-linear-to-br from-gray-900 to-black rounded-xl border-2 border-gray-800 p-6">
                     <div className="flex items-center justify-between mb-2">
                       <CheckCircle className="w-8 h-8 text-yellow-600" />
                       <span className="text-3xl font-black">
@@ -423,7 +432,7 @@ export default function CustomerDashboard() {
 
                 {/* Upcoming Bookings */}
                 {upcomingBookings.length > 0 && (
-                  <div className="bg-gradient-to-br from-gray-900 to-black rounded-xl border-2 border-gray-800 p-6">
+                  <div className="bg-linear-to-br from-gray-900 to-black rounded-xl border-2 border-gray-800 p-6">
                     <h2 className="text-2xl font-black mb-4 flex items-center space-x-2">
                       <Calendar className="w-6 h-6 text-red-600" />
                       <span>Upcoming Bookings</span>
@@ -480,7 +489,7 @@ export default function CustomerDashboard() {
                 )}
 
                 {/* Recent Orders */}
-                <div className="bg-gradient-to-br from-gray-900 to-black rounded-xl border-2 border-gray-800 p-6">
+                <div className="bg-linear-to-br from-gray-900 to-black rounded-xl border-2 border-gray-800 p-6">
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-2xl font-black flex items-center space-x-2">
                       <ShoppingBag className="w-6 h-6 text-red-600" />
@@ -546,7 +555,7 @@ export default function CustomerDashboard() {
                   {orders.map((order) => (
                     <div
                       key={order._id}
-                      className="bg-gradient-to-br from-gray-900 to-black rounded-xl border-2 border-gray-800 hover:border-red-600 transition-all p-6 cursor-pointer"
+                      className="bg-linear-to-br from-gray-900 to-black rounded-xl border-2 border-gray-800 hover:border-red-600 transition-all p-6 cursor-pointer"
                       onClick={() => setSelectedOrder(order)}
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
@@ -627,7 +636,7 @@ export default function CustomerDashboard() {
                   {bookings.map((booking) => (
                     <div
                       key={booking._id}
-                      className="bg-gradient-to-br from-gray-900 to-black rounded-xl border-2 border-gray-800 hover:border-red-600 transition-all p-6 cursor-pointer"
+                      className="bg-linear-to-br from-gray-900 to-black rounded-xl border-2 border-gray-800 hover:border-red-600 transition-all p-6 cursor-pointer"
                       onClick={() => setSelectedBooking(booking)}
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
@@ -735,7 +744,7 @@ export default function CustomerDashboard() {
                   )}
                 </div>
 
-                <div className="bg-gradient-to-br from-gray-900 to-black rounded-xl border-2 border-gray-800 p-6">
+                <div className="bg-linear-to-br from-gray-900 to-black rounded-xl border-2 border-gray-800 p-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-semibold text-gray-400 mb-2">
@@ -864,7 +873,7 @@ export default function CustomerDashboard() {
                   {customer.addresses.map((address) => (
                     <div
                       key={address._id}
-                      className="bg-gradient-to-br from-gray-900 to-black rounded-xl border-2 border-gray-800 p-6 hover:border-red-600 transition-all"
+                      className="bg-linear-to-br from-gray-900 to-black rounded-xl border-2 border-gray-800 p-6 hover:border-red-600 transition-all"
                     >
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center space-x-2">
@@ -911,7 +920,7 @@ export default function CustomerDashboard() {
                   </p>
                 </div>
 
-                <div className="bg-gradient-to-br from-gray-900 to-black rounded-xl border-2 border-gray-800 p-6">
+                <div className="bg-linear-to-br from-gray-900 to-black rounded-xl border-2 border-gray-800 p-6">
                   <h2 className="text-xl font-bold mb-4 flex items-center space-x-2">
                     <Lock className="w-5 h-5 text-red-600" />
                     <span>Change Password</span>
@@ -953,7 +962,7 @@ export default function CustomerDashboard() {
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-gray-900 to-black rounded-xl border-2 border-gray-800 p-6">
+                <div className="bg-linear-to-br from-gray-900 to-black rounded-xl border-2 border-gray-800 p-6">
                   <h2 className="text-xl font-bold mb-4 flex items-center space-x-2">
                     <Bell className="w-5 h-5 text-red-600" />
                     <span>Notification Preferences</span>
@@ -1014,7 +1023,7 @@ export default function CustomerDashboard() {
       {/* Order Details Modal */}
       {selectedOrder && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm">
-          <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl border-2 border-red-600 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-linear-to-br from-gray-900 to-black rounded-2xl border-2 border-red-600 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 sm:p-8">
               <div className="flex items-start justify-between mb-6">
                 <div>
@@ -1090,7 +1099,7 @@ export default function CustomerDashboard() {
                 <div className="bg-gray-900 rounded-lg p-4">
                   <h3 className="font-bold mb-3">Shipping Information</h3>
                   <div className="flex items-start space-x-2 text-gray-300">
-                    <MapPin className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    <MapPin className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
                     <p>{selectedOrder.shippingAddress}</p>
                   </div>
                   {selectedOrder.trackingNumber && (
@@ -1125,7 +1134,7 @@ export default function CustomerDashboard() {
       {/* Booking Details Modal */}
       {selectedBooking && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm">
-          <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl border-2 border-red-600 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-linear-to-br from-gray-900 to-black rounded-2xl border-2 border-red-600 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6 sm:p-8">
               <div className="flex items-start justify-between mb-6">
                 <div>

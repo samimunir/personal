@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Mail,
   Lock,
@@ -12,6 +12,7 @@ import {
   Home,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
 
 export default function AuthPages() {
   const [authMode, setAuthMode] = useState("login"); // 'login', 'register', 'forgot-password', 'reset-password'
@@ -22,6 +23,8 @@ export default function AuthPages() {
   const [success, setSuccess] = useState("");
 
   const navigate = useNavigate();
+
+  const { isAuthenticated, login, user } = useAuth();
 
   // Login state
   const [loginData, setLoginData] = useState({
@@ -75,40 +78,17 @@ export default function AuthPages() {
     setLoading(true);
 
     try {
-      // Simulate API call - Replace with your actual API endpoint
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: loginData.email,
-          password: loginData.password,
-        }),
-      });
+      await login({ email: loginData.email, password: loginData.password });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        // Store JWT token - Note: localStorage is not supported in Claude artifacts
-        // In production, you would do: localStorage.setItem('token', data.token);
-
-        setSuccess("Login successful! Redirecting...");
-
-        // Redirect to dashboard after 1.5 seconds
-        setTimeout(() => {
-          // window.location.href = '/dashboard';
-          alert(
-            "Login successful! In production, this would redirect to dashboard."
-          );
-        }, 1500);
+      if (user.roles.includes("admin")) {
+        navigate("/admin/dashboard");
+        alert("admin");
       } else {
-        setError(data.message || "Invalid email or password");
+        navigate("/dashboard");
       }
+      //   navigate("/dashboard");
     } catch (err) {
-      // For demo purposes, show success message
-      setSuccess("Login successful! (Demo mode - API not connected)");
-      console.log("Demo login with:", loginData.email);
+      setError("Invalid credentials.");
     } finally {
       setLoading(false);
     }
@@ -295,11 +275,17 @@ export default function AuthPages() {
     }
   };
 
+  useEffect(() => {
+    if (user || isAuthenticated) {
+      navigate("/");
+    }
+  }, [user]);
+
   return (
     <div className="bg-black text-white min-h-screen flex items-center justify-center p-4">
       {/* Background Effects */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-black">
+        <div className="absolute inset-0 bg-linear-to-br from-black via-gray-900 to-black">
           <div className="absolute inset-0 opacity-20">
             {[...Array(30)].map((_, i) => (
               <div
@@ -333,18 +319,18 @@ export default function AuthPages() {
         </div>
 
         {/* Auth Card */}
-        <div className="bg-gradient-to-br from-gray-900 to-black rounded-2xl border-2 border-gray-800 p-8 shadow-2xl">
+        <div className="bg-linear-to-br from-gray-900 to-black rounded-2xl border-2 border-gray-800 p-8 shadow-2xl">
           {/* Error/Success Messages */}
           {error && (
             <div className="mb-6 bg-red-600/10 border border-red-600/30 rounded-lg p-4 flex items-start space-x-3">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
               <p className="text-sm text-red-600">{error}</p>
             </div>
           )}
 
           {success && (
             <div className="mb-6 bg-green-600/10 border border-green-600/30 rounded-lg p-4 flex items-start space-x-3">
-              <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+              <CheckCircle className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />
               <p className="text-sm text-green-600">{success}</p>
             </div>
           )}

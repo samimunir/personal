@@ -1,11 +1,18 @@
 import { useState, useEffect } from "react";
 import { Menu, X, ShoppingCart } from "lucide-react";
-// import TTCLogo from '../assets/ttc-logo.png'; // Uncomment and adjust path when you add your logo
 import logo from "../assets/top-tier-customs-llc-logo.JPG";
+import { useAuth } from "../context/AuthContext.jsx";
+import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+
+  const { isAuthenticated, user, logout } = useAuth();
+
+  const path = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,26 +32,18 @@ export default function Navbar() {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          {/* Logo Section with Placeholder */}
+          {/* Logo Section */}
           <div className="flex items-center space-x-4">
-            {/* TTC Logo Placeholder - Replace with your actual logo */}
+            {/* TTC Logo  */}
             <div className="relative w-12 h-12 flex items-center justify-center group">
-              {/* Optional: Uncomment below to use actual logo image */}
               <div className="absolute inset-0 bg-red-600/20 rounded-lg blur-lg opacity-0 group-hover:opacity-100 transition-opacity"></div>
               <img
                 src={logo}
+                onClick={() => navigate("/")}
                 alt="Top Tier Customs Logo"
                 className="relative rounded-full w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
               />
-
-              {/* Placeholder Logo (remove when using actual image) */}
-              {/* <div className="absolute inset-0 bg-gradient-to-br from-red-600 to-red-800 rounded-lg transform rotate-45 opacity-20"></div>
-              <div className="relative text-2xl font-black">
-                <span className="text-white">TT</span>
-                <span className="text-red-600">C</span>
-              </div> */}
             </div>
-
             <div className="hidden sm:block">
               <div className="text-xl font-black tracking-tight">
                 <span className="text-white">TOP TIER</span>{" "}
@@ -55,7 +54,6 @@ export default function Navbar() {
               </div>
             </div>
           </div>
-
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">
             <a
@@ -91,10 +89,9 @@ export default function Navbar() {
                 <ShoppingCart className="w-4 h-4" />
                 <span>Shop Now</span>
               </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-red-700 to-red-600 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
+              <div className="absolute inset-0 bg-linear-to-r from-red-700 to-red-600 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
             </button>
           </div>
-
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -113,6 +110,40 @@ export default function Navbar() {
       {isMenuOpen && (
         <div className="md:hidden bg-black/80 backdrop-blur-xl border-t border-red-600/20">
           <div className="px-4 py-6 space-y-4">
+            {isAuthenticated && user ? (
+              <div className="flex items-center justify-between">
+                <a
+                  href="/dashboard"
+                  onClick={() => setIsMenuOpen(false)}
+                  className={`${
+                    path.pathname === "/dashboard"
+                      ? "text-red-600 bg-white/5"
+                      : "hover:text-red-600 text-gray-300"
+                  } block transition-colors py-3 px-4 rounded-lg hover:bg-white/5`}
+                  // className="block text-gray-300 hover:text-red-600 transition-colors py-3 px-4 rounded-lg hover:bg-white/5"
+                >
+                  Dashboard
+                </a>
+                <button
+                  onClick={() => {
+                    logout();
+                    setIsMenuOpen(false);
+                  }}
+                  className={`text-gray-300 hover:text-red-600 font-medium block transition-colors py-3 px-4 rounded-lg hover:bg-white/5`}
+                  // className="block text-gray-300 hover:text-red-600 transition-colors py-3 px-4 rounded-lg hover:bg-white/5"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <a
+                href="/auth"
+                onClick={() => setIsMenuOpen(false)}
+                className="block text-gray-300 hover:text-red-600 transition-colors py-3 px-4 rounded-lg hover:bg-white/5"
+              >
+                Login
+              </a>
+            )}
             <a
               href="#services"
               onClick={() => setIsMenuOpen(false)}

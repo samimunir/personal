@@ -3,9 +3,8 @@ import Main from "./layouts/Main.jsx";
 import Protected from "./layouts/Protected.jsx";
 import Landing from "./pages/Landing.jsx";
 import AuthPages from "./pages/Auth.jsx";
-import ProductsPage from "./pages/Products.jsx";
-import ServicesPage from "./pages/Services.jsx";
 import CustomerDashboard from "./pages/CustomerDashboard.jsx";
+import AdminDashboard from "./pages/AdminDashboard.jsx";
 
 const App = () => {
   return (
@@ -20,14 +19,22 @@ const App = () => {
         }
       />
       <Route path="/auth" element={<AuthPages />} />
-      <Route path="/products" index element={<ProductsPage />} />
-      <Route path="/services" index element={<ServicesPage />} />
       <Route
         path="/dashboard"
         index
         element={
-          <Protected>
-            <CustomerDashboard />
+          <Protected allowedRoles={["customer"]}>
+            <Main>
+              <CustomerDashboard />
+            </Main>
+          </Protected>
+        }
+      />
+      <Route
+        path="/admin/dashboard"
+        element={
+          <Protected allowedRoles={["admin"]}>
+            <AdminDashboard />
           </Protected>
         }
       />

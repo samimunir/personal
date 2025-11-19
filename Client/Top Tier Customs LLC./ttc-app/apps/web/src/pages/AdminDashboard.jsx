@@ -69,7 +69,7 @@ const mockUpcomingBookings = [
   },
 ];
 
-export default function AdminDashboardOverview() {
+export default function AdminDashboard() {
   const [activeSection, setActiveSection] = useState("overview");
   const [searchQuery, setSearchQuery] = useState("");
   const [notification, setNotification] = useState({
