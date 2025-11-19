@@ -1,5 +1,5 @@
 import User from "../models/User.js";
-import { verifyAccessToken } from "../utils/jwt.js";
+import JWT from "../utils/jwt.js";
 
 const authenticate = async (req, res, next) => {
   try {
@@ -12,7 +12,7 @@ const authenticate = async (req, res, next) => {
     }
 
     const token = authHeader.split(" ")[1];
-    const payload = verifyAccessToken(token);
+    const payload = JWT.verifyAccessToken(token);
 
     const user = await User.findById(payload.sub);
 
@@ -65,4 +65,4 @@ const authorizeRoles = (...allowedRoles) => {
   };
 };
 
-export default { authenticate, authorizeRoles };
+export { authenticate, authorizeRoles };

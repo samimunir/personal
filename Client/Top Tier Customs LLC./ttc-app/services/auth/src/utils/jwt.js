@@ -25,9 +25,11 @@ const verifyRefreshToken = (token) => {
   return jwt.verify(token, env.JWT_REFRESH_TOKEN_SECRET);
 };
 
-export default {
+const JWT = {
   signAccessToken,
   signRefreshToken,
   verifyAccessToken,
   verifyRefreshToken,
 };
+
+export default JWT;

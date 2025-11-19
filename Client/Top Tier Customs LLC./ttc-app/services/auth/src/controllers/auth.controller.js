@@ -1,29 +1,25 @@
 import crypto from "crypto";
 import User from "../models/User.js";
-import {
-  signAccessToken,
-  signRefreshToken,
-  verifyRefreshToken,
-} from "../utils/jwt.js";
+import JWT from "../utils/jwt.js";
 
 export const hashToken = (token) => {
   return crypto.createHash("sha256").update(token).digest("hex");
 };
 
 export const generateAndStoreTokens = async (user, oldRefreshToken) => {
-  const accessToken = signAccessToken(user);
-  const refreshToken = signRefreshToken(user);
+  const accessToken = JWT.signAccessToken(user);
+  const refreshToken = JWT.signRefreshToken(user);
   const hashedNew = hashToken(refreshToken);
 
   if (oldRefreshToken) {
     const hashedOld = hashToken(oldRefreshToken);
 
-    user.refreshTokens = user.refreshToken.filter(
+    user.refreshTokens = user.refreshTokens.filter(
       (rt) => rt.token !== hashedOld
     );
   }
 
-  user.refreshToken.push({ token: hashedNew, createdAt: new Date() });
+  user.refreshTokens.push({ token: hashedNew, createdAt: new Date() });
 
   await user.save();
 
@@ -132,10 +128,10 @@ export const logout = async (req, res, next) => {
       throw err;
     }
 
-    const payload = verifyRefreshToken(refreshToken);
+    const payload = JWT.verifyRefreshToken(refreshToken);
     const user = await User.findById(payload.sub);
     if (!user) {
-      return res.status(200).json({ message: "Logged out." });
+      return res.status(200).json({ message: "Logged out (1)." });
     }
 
     const hashed = hashToken(refreshToken);
@@ -143,10 +139,10 @@ export const logout = async (req, res, next) => {
 
     await user.save();
 
-    return res.status(200).json({ message: "Logged out." });
+    return res.status(200).json({ message: "Logged out (2)." });
   } catch (err) {
     if (err.name === "TokenExpiredError" || err.name === "JsonWebTokenError") {
-      return res.status(200).json({ message: "Logged out." });
+      return res.status(200).json({ message: "Logged out (3)." });
     }
 
     next(err);
@@ -164,7 +160,7 @@ export const refreshAccessToken = async (req, res, next) => {
       throw err;
     }
 
-    const payload = verifyRefreshToken(oldRefreshToken);
+    const payload = JWT.verifyRefreshToken(oldRefreshToken);
 
     const user = await User.findById(payload.sub);
     if (!user) {
