@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Mail,
   Lock,
@@ -24,7 +24,7 @@ export default function AuthPages() {
 
   const navigate = useNavigate();
 
-  const { isAuthenticated, login, user } = useAuth();
+  const { isAuthenticated, initializing, login, user } = useAuth();
 
   // Login state
   const [loginData, setLoginData] = useState({
@@ -80,11 +80,12 @@ export default function AuthPages() {
     try {
       await login({ email: loginData.email, password: loginData.password });
 
-      if (user.roles.includes("admin")) {
-        navigate("/admin/dashboard");
-        alert("admin");
-      } else {
-        navigate("/dashboard");
+      if (!initializing && isAuthenticated && user) {
+        if (user.roles.includes("admin")) {
+          navigate("/admin/dashboard");
+        } else {
+          navigate("/dashboard");
+        }
       }
       //   navigate("/dashboard");
     } catch (err) {
@@ -274,12 +275,6 @@ export default function AuthPages() {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    if (user || isAuthenticated) {
-      navigate("/");
-    }
-  }, [user]);
 
   return (
     <div className="bg-black text-white min-h-screen flex items-center justify-center p-4">

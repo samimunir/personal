@@ -16,6 +16,7 @@ import {
   CheckCircle,
   AlertCircle,
 } from "lucide-react";
+import { useAuth } from "../context/AuthContext.jsx";
 
 const mockStats = {
   totalRevenue: 45789.5,
@@ -77,6 +78,8 @@ export default function AdminDashboard() {
     type: "",
     message: "",
   });
+
+  const { user, logout } = useAuth();
 
   const showNotification = (type, message) => {
     setNotification({ show: true, type, message });
@@ -182,7 +185,10 @@ export default function AdminDashboard() {
           </nav>
 
           <div className="mt-8 pt-8 border-t border-gray-800">
-            <button className="w-full flex items-center space-x-3 px-4 py-3 text-gray-400 hover:text-red-600 rounded-lg transition-colors">
+            <button
+              onClick={() => logout()}
+              className="w-full flex items-center space-x-3 px-4 py-3 text-gray-400 hover:text-red-600 rounded-lg transition-colors"
+            >
               <LogOut className="w-5 h-5" />
               <span className="font-semibold">Sign Out</span>
             </button>
