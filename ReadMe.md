@@ -67,4 +67,6 @@ Sami Munir | samidmunir@outlook.com | Rutgers University
 
 ## LeetCode Mastery
 
+### 217 - Contains Duplicate
+
 ## Data Structures & Algorithms
