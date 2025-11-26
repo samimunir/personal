@@ -69,4 +69,6 @@ Sami Munir | samidmunir@outlook.com | Rutgers University
 
 ### 217 - Contains Duplicate
 
+### 242 - Valid Anagram
+
 ## Data Structures & Algorithms
