@@ -99,24 +99,54 @@ export const login = async (req, res) => {
   }
 };
 
-export const logout = (req, res) => {
+export const logout = async (req, res) => {
   try {
+    const reqUser = req.user;
+    const db_user = await User.findById(reqUser.sub);
+    if (!db_user) {
+      return res.status(404).json({
+        success: false,
+        error: "No user found.",
+        message: "User logout unsuccessful.",
+      });
+    }
+
+    console.log(`reqUser.token_v: ${reqUser.token_v}`);
+    console.log(
+      `db_user.refresh_token_version: ${db_user.refresh_token_version}`
+    );
+    if (reqUser.token_v != db_user.refresh_token_version) {
+      return res.status(403).json({
+        success: false,
+        error: "Unauthorized user.",
+        message: "User logout unsuccessful.",
+      });
+    }
+
+    db_user.refresh_token_version += 1;
+    await db_user.save();
+
     res.clearCookie("refreshToken", {
       httpOnly: true,
       secure: envVAR.NODE_ENV === "production",
       sameSite: "strict",
     });
 
-    return res
-      .status(200)
-      .json({ success: true, message: "User logout successful." });
+    return res.status(200).json({
+      success: true,
+      account: {
+        id: db_user.sub,
+        email: db_user.email,
+        role: db_user.role,
+        token_v: db_user.refresh_token_version,
+      },
+      message: "User logout successful.",
+    });
   } catch (e) {
-    return res
-      .status(500)
-      .json({
-        success: false,
-        error: e.message,
-        message: "User logout failed.",
-      });
+    return res.status(500).json({
+      success: false,
+      error: e.message,
+      message: "User logout failed.",
+    });
   }
 };

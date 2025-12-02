@@ -68,6 +68,10 @@ const userSchema = new mongoose.Schema(
         type: [String],
       },
     },
+    refresh_token_version: {
+      type: Number,
+      default: 0,
+    },
     psw_last_reset: {
       type: Date,
     },

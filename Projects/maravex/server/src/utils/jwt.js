@@ -6,6 +6,7 @@ export const signAT = (user) => {
     sub: user._id.toString(),
     email: user.email,
     role: user.role,
+    token_v: user.refresh_token_version,
   };
   const SECRET = envVAR.JWT_AT_SECRET;
 
@@ -17,6 +18,7 @@ export const signAT = (user) => {
 export const signRT = (user) => {
   const payload = {
     sub: user._id.toString(),
+    token_v: user.refresh_token_version,
   };
   const SECRET = envVAR.JWT_RT_SECRET;
 
