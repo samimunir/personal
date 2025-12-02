@@ -1,6 +1,5 @@
 import jwt from "jsonwebtoken";
 import envVAR from "../config/env.js";
-import User from "../models/User.model.js";
 
 export const authenticate = (req, res, next) => {
   const header = req.headers["authorization"];

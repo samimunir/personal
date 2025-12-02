@@ -26,3 +26,7 @@ export const signRT = (user) => {
 
   return token;
 };
+
+export const verifyRT = (token) => {
+  return jwt.verify(token, envVAR.JWT_RT_SECRET);
+};

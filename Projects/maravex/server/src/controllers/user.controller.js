@@ -2,6 +2,7 @@ import User from "../models/User.model.js";
 import bcrypt from "bcryptjs";
 import { signAT, signRT } from "../utils/jwt.js";
 import envVAR from "../config/env.js";
+import { verifyRT } from "../utils/jwt.js";
 
 export const signup = async (req, res) => {
   try {
@@ -147,6 +148,72 @@ export const logout = async (req, res) => {
       success: false,
       error: e.message,
       message: "User logout failed.",
+    });
+  }
+};
+
+export const refresh = async (req, res) => {
+  try {
+    const { refreshToken } = req.cookies;
+    if (!refreshToken) {
+      return res.status(401).json({
+        success: false,
+        error: "No refreshToken.",
+        message: "Refresh failed.",
+      });
+    }
+
+    let payload;
+    try {
+      payload = verifyRT(refreshToken);
+    } catch (sub_e) {
+      return res.status(401).json({
+        source: "<user.controller:refresh()>",
+        message: "Invalid refresh token.",
+        error: "Refresh failed.",
+      });
+    }
+
+    const userId = payload.sub;
+    const token_v = payload.token_v;
+
+    const db_user = await User.findById(userId);
+    if (!db_user) {
+      return res.status(404).json({
+        source: "<user.controller:refresh()>",
+        message: "Invalid user/not found.",
+        error: "Refresh failed.",
+      });
+    }
+    if (db_user.refresh_token_version !== token_v) {
+      return res.status(401).json({
+        source: "<user.controller:refresh()>",
+        message: "Refresh token has been revoked.",
+        error: "Refresh failed.",
+      });
+    }
+
+    const newAT = signAT(db_user);
+    const newRT = signRT(db_user);
+
+    res.cookie("refreshToken", newRT, {
+      httpOnly: true,
+      secure: envVAR.NODE_ENV === "development",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Auth refresh successful.",
+      user: db_user,
+      accessToken: newAT,
+    });
+  } catch (e) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error.",
+      error: e.message,
     });
   }
 };

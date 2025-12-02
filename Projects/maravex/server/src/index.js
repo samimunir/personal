@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import envVAR from "./config/env.js";
 import connectDB from "./lib/mongodb.js";
 import authRouter from "./routes/auth.routes.js";
@@ -12,6 +13,7 @@ app.use(
     credentials: true,
   })
 );
+app.use(cookieParser());
 app.use(express.json());
 
 app.use("/", (req, _res, next) => {

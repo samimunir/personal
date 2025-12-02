@@ -1,5 +1,10 @@
 import express from "express";
-import { signup, login, logout } from "../controllers/user.controller.js";
+import {
+  signup,
+  login,
+  logout,
+  refresh,
+} from "../controllers/user.controller.js";
 import { authenticate } from "../middleware/auth.middleware.js";
 
 const authRouter = express.Router();
@@ -13,5 +18,6 @@ authRouter.get("/health", (req, res) => {
 authRouter.post("/signup", signup);
 authRouter.post("/login", login);
 authRouter.post("/logout", authenticate, logout);
+authRouter.post("/refresh", authenticate, refresh);
 
 export default authRouter;
