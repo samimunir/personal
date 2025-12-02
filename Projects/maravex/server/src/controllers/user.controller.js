@@ -133,6 +133,8 @@ export const logout = async (req, res) => {
       sameSite: "strict",
     });
 
+    req.user = null;
+
     return res.status(200).json({
       success: true,
       account: {
@@ -209,6 +211,46 @@ export const refresh = async (req, res) => {
       user: db_user,
       accessToken: newAT,
     });
+  } catch (e) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error.",
+      error: e.message,
+    });
+  }
+};
+
+export const me = async (req, res) => {
+  try {
+    const reqUser = req.user;
+    if (!reqUser || req.user === null) {
+      return res.status(401).json({
+        success: false,
+        error: "No user found.",
+        message: "Failed to fetch me.",
+      });
+    }
+
+    const db_user = await User.findById(req.user.sub);
+    if (!db_user) {
+      return res.status(404).json({
+        success: false,
+        error: "User not found.",
+        message: "Failed to fetch me.",
+      });
+    }
+
+    if (reqUser.token_v !== db_user.refresh_token_version) {
+      return res
+        .status(403)
+        .json({
+          success: false,
+          error: "User token version logged out.",
+          message: "Failed to fetch me.",
+        });
+    }
+
+    return res.status(200).json({ user: db_user });
   } catch (e) {
     return res.status(500).json({
       success: false,

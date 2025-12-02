@@ -4,6 +4,7 @@ import {
   login,
   logout,
   refresh,
+  me,
 } from "../controllers/user.controller.js";
 import { authenticate } from "../middleware/auth.middleware.js";
 
@@ -19,5 +20,6 @@ authRouter.post("/signup", signup);
 authRouter.post("/login", login);
 authRouter.post("/logout", authenticate, logout);
 authRouter.post("/refresh", authenticate, refresh);
+authRouter.get("/me", authenticate, me);
 
 export default authRouter;
