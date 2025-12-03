@@ -18,6 +18,7 @@ app.use(express.json());
 
 app.use("/", (req, _res, next) => {
   console.log(`📲 [${req.method}] - ${req.originalUrl}`);
+  console.log(`-> ${req.headers["authorization"]}`);
   next();
 });
 

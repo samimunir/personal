@@ -72,7 +72,10 @@ export const AuthProvider = ({ children }) => {
 
   const refreshAccessToken = useCallback(async () => {
     try {
-      const res = await api.post("/auth/refresh");
+      console.log("<AuthContext>.refreshAccessToken()");
+      const res = await api.post("/auth/refresh", {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
       const { accessToken: newToken } = res.data || {};
 
       if (!newToken) {
@@ -137,6 +140,7 @@ export const AuthProvider = ({ children }) => {
     const bootstrap = async () => {
       try {
         await refreshAccessToken();
+        console.log("<AuthContext>.useEffect()");
       } finally {
         if (isMounted) {
           setIsLoading(false);
@@ -152,6 +156,7 @@ export const AuthProvider = ({ children }) => {
   }, [refreshAccessToken]);
 
   const isAuthenticated = !!user;
+  console.log(`<AuthContext>.isAuthenticated: ${isAuthenticated}`);
 
   const value = useMemo(
     () => ({
