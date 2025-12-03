@@ -67,6 +67,8 @@ Sami Munir | samidmunir@outlook.com | Rutgers University
 
 ### MaraveX
 
+### mern-auth
+
 ## LeetCode Mastery
 
 ### 217 - Contains Duplicate
